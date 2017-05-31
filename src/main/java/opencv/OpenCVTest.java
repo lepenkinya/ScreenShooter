@@ -179,6 +179,7 @@ public class OpenCVTest {
         }
         System.out.println("Replaced " + replaceCount + " out of " + source.height() * 1.0* source.width());
         Imgcodecs.imwrite("blur"+image, destination);
+        Imgproc.cvtColor(destination, destination, Imgproc.COLOR_RGB2GRAY);
+        Imgcodecs.imwrite("grayblur"+image, destination);
     }
-
 }
