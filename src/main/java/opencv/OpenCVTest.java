@@ -3,12 +3,16 @@ package opencv;
 import org.opencv.core.*;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
+import recognition.Coordinates;
 
-import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Random;
 
 public class OpenCVTest {
+
+    public static final double epsilon = 10.0;
 
     static class PixelColor {
         final double red;
@@ -122,7 +126,6 @@ public class OpenCVTest {
         PixelColor maxColor = getMaxColor(source);
 
         int filterOffset = 1;
-        double epsilon = 10.0;
         long replaceCount = 0;
         for (int x = filterOffset; x < source.width() - filterOffset; ++x) {
             for (int y = filterOffset; y < source.height() - filterOffset; ++y) {
@@ -143,5 +146,48 @@ public class OpenCVTest {
         Imgcodecs.imwrite("blur"+image, destination);
         Imgproc.cvtColor(destination, destination, Imgproc.COLOR_RGB2GRAY);
         Imgcodecs.imwrite("grayblur"+image, destination);
+    }
+
+    public static Random myRandom = new Random(System.currentTimeMillis());
+
+    public static void filterTextRectangles(String input, List<Coordinates> words, int samplePointsCount, double epsilon, double threshold) {
+        Mat source = Imgcodecs.imread(input,  Imgcodecs.CV_LOAD_IMAGE_COLOR);
+        double[] backgroundColor = getMaxColor(source).toPoint();
+        int diffColorSize = 0;
+        for (Coordinates coords : words) {
+            for (int i = 0; i < samplePointsCount; ++i) {
+                int side = myRandom.nextInt(4);
+                int aY = side & 1;
+                int aX = 1 - aY;
+                int dX = (side & 2) & aY;
+                int dY = (side & 2) & (1 - dX);
+                double alpha = myRandom.nextDouble();
+                int x = new Double(coords.getX_left() + (dX + alpha * aX) * coords.getWidth()).intValue();
+                int y = new Double(coords.getY_up() + (dY + alpha * aY) * coords.getHeight()).intValue();
+                if (!isDiffOk(backgroundColor, source.get(y, x), epsilon)) {
+                    diffColorSize ++;
+                }
+            }
+            if (diffColorSize >= samplePointsCount * threshold) {
+                //fill the whole rectangle
+                Mat mask = new Mat(source.height() + 2, source.width() + 2, Imgcodecs.CV_LOAD_IMAGE_GRAYSCALE);
+                Imgproc.floodFill(source, mask, new Point(coords.getX_left(), coords.getY_up()),
+                        new Scalar(backgroundColor));
+
+            }
+        }
+        Imgcodecs.imwrite("rectangle_recolored"+input, source);
+
+    }
+
+    public static void addRectangles(String input, List<Coordinates> words, List<Coordinates> lines) {
+        Mat source = Imgcodecs.imread(input,  Imgcodecs.CV_LOAD_IMAGE_COLOR);
+        Mat dst = source;
+        for (Coordinates coords : words) {
+            Point leftUpper = new Point(coords.getX_left(), coords.getY_up());
+            Point rightLower = new Point(coords.getX_left() + coords.getWidth(), coords.getY_up() + coords.getHeight());
+            Imgproc.rectangle(dst, leftUpper, rightLower, new Scalar(255, 0, 0));
+        }
+        Imgcodecs.imwrite("rectangles_"+input, dst);
     }
 }

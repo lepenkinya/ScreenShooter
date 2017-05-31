@@ -1,6 +1,7 @@
 package recognition
 
 import com.google.gson.Gson
+import opencv.OpenCVTest
 import org.apache.http.client.methods.HttpPost
 import org.apache.http.client.utils.URIBuilder
 import org.apache.http.entity.FileEntity
@@ -77,8 +78,9 @@ object CognitiveApi {
             request.setHeader("Content-Type", "application/octet-stream")
             request.setHeader("Ocp-Apim-Subscription-Key", info.key1)
 
+            val inputName = "grayblurreference.png"
 
-            val file = File("xxx.png")
+            val file = File(inputName)
             val requestEntity = FileEntity(file)
 
             request.entity = requestEntity
@@ -94,6 +96,9 @@ object CognitiveApi {
 
                 val allWords = region.words()
                 val allLines = region.allLines()
+
+                OpenCVTest.addRectangles(inputName, allWords, allLines)
+                OpenCVTest.filterTextRectangles(inputName, allWords, 20, OpenCVTest.epsilon, 0.5);
 
                 region.regions.forEach {
                     println("REGION_START")
