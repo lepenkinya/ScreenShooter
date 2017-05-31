@@ -11,6 +11,9 @@ import com.intellij.openapi.fileTypes.LanguageFileType
 import com.intellij.openapi.fileTypes.PlainTextFileType
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.io.FileUtil
+import com.intellij.psi.PsiErrorElement
+import com.intellij.psi.PsiFileFactory
+import com.intellij.psi.SyntaxTraverser
 import com.intellij.util.PathUtil
 import com.intellij.util.ui.UIUtil
 import java.awt.Image
@@ -102,9 +105,22 @@ class ImageParsingService(val project: Project) {
 
 
     fun detectTypeAndText(indentedTextFragments: Array<String>, fileType: FileType?): ImageInfo? {
-        val text = indentedTextFragments.joinToString { it }
         val languageFileType: LanguageFileType = fileType as? LanguageFileType ?: PlainTextFileType.INSTANCE
+        val filteredFragments = filterFragmentsByFileType(indentedTextFragments, languageFileType)
 
+
+        val text = filteredFragments.joinToString(separator = "\n", transform = { it })
         return ImageInfo(text, languageFileType)
+    }
+
+    fun filterFragmentsByFileType(indentedTextFragments: Array<String>, fileType: LanguageFileType): List<String> {
+        val result = indentedTextFragments.filter {
+            val psiFile = PsiFileFactory.getInstance(project).createFileFromText("foo", fileType, it)
+            val errorCount = SyntaxTraverser.psiTraverser(psiFile).traverse().filter(PsiErrorElement::class.java)
+
+            return@filter errorCount.size() <= 0
+        }
+
+        return result
     }
 }
