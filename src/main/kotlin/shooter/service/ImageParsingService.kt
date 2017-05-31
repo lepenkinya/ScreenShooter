@@ -8,6 +8,7 @@ import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.fileTypes.FileType
 import com.intellij.openapi.fileTypes.LanguageFileType
+import com.intellij.openapi.fileTypes.PlainTextFileType
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.io.FileUtil
 import com.intellij.util.PathUtil
@@ -24,6 +25,9 @@ class ImageParsingService(val project: Project) {
     val logger = Logger.getInstance("#shooter.service.ImageParsingService")
     val nextNumber = AtomicLong()
 
+    data class ImageInfo(val text: String, val fileType: LanguageFileType)
+
+
     companion object ServiceHolder {
         fun getService(project: Project): ImageParsingService {
             return ServiceManager.getService(project, ImageParsingService::class.java)
@@ -39,13 +43,13 @@ class ImageParsingService(val project: Project) {
 
 
     private fun processImageImpl(image: Image, fileType: FileType?) {
-        saveImageAsIOFile(image)
+        val info = getParsedImageInfo(image, fileType) ?: return
 
-        val language = (fileType as? LanguageFileType)?.language
+        val language = info.fileType.language
 
         val option = ScratchFileService.Option.create_new_always
         val fileName = "image"
-        val text = "class Foo {}"
+        val text = info.text
         val ext = fileType?.defaultExtension
 
         ApplicationManager.getApplication().invokeLater({
@@ -67,7 +71,6 @@ class ImageParsingService(val project: Project) {
             val outFile = FileUtil.createTempFile("saved_" + nextNumber.incrementAndGet(), ".png", true)
 
             ImageIO.write(bufferedImage, "png", outFile)
-            logMessages("Created file: " + outFile.absolutePath)
 
             return outFile
         } catch (e: Exception) {
@@ -80,5 +83,28 @@ class ImageParsingService(val project: Project) {
     private fun logMessages(text: String) {
         println(text)
         logger.info(text)
+    }
+
+
+    private fun getIndentedTextFragments(image: Image): Array<String>? {
+        val ioFile = saveImageAsIOFile(image) ?: return null
+        logMessages("Created file for image ${ioFile.absolutePath}")
+
+        return arrayOf("class Foo {}")
+    }
+
+
+    private fun getParsedImageInfo(image: Image, fileType: FileType?): ImageInfo? {
+        val indentedTextFragments = getIndentedTextFragments(image) ?: return null
+
+        return detectTypeAndText(indentedTextFragments, fileType)
+    }
+
+
+    fun detectTypeAndText(indentedTextFragments: Array<String>, fileType: FileType?): ImageInfo? {
+        val text = indentedTextFragments.joinToString { it }
+        val languageFileType: LanguageFileType = fileType as? LanguageFileType ?: PlainTextFileType.INSTANCE
+
+        return ImageInfo(text, languageFileType)
     }
 }
