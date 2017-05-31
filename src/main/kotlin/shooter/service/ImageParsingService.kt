@@ -67,7 +67,7 @@ class ImageParsingService(val project: Project) {
         })
     }
 
-    private fun saveImageAsIOFile(image: Image): File? {
+    fun saveImageAsIOFile(image: Image): File? {
         try {
             val bufferedImage = UIUtil.createImage(image.getWidth(null), image.getHeight(null), BufferedImage.TYPE_INT_RGB)
 
