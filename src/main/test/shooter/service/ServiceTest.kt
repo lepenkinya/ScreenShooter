@@ -17,7 +17,7 @@ class ServiceTest : LightPlatformCodeInsightFixtureTestCase() {
         TestCase.assertNotNull(service)
 
         val template = "class Foo {}"
-        val detectTypeAndText = service.detectTypeAndText(arrayOf(template), JavaFileType.INSTANCE)
+        val detectTypeAndText = service.detectTypeAndProcessText(arrayOf(template), JavaFileType.INSTANCE)
         TestCase.assertNotNull(detectTypeAndText)
         val text = detectTypeAndText!!.text
 
@@ -34,7 +34,7 @@ class ServiceTest : LightPlatformCodeInsightFixtureTestCase() {
 
         val template1 = "class Foo {}"
         val template2 = "unexpected token ' "
-        val detectTypeAndText = service.detectTypeAndText(arrayOf(template1, template2), JavaFileType.INSTANCE)
+        val detectTypeAndText = service.detectTypeAndProcessText(arrayOf(template1, template2), JavaFileType.INSTANCE)
         TestCase.assertNotNull(detectTypeAndText)
         val text = detectTypeAndText!!.text
 

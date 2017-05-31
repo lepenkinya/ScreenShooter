@@ -100,11 +100,11 @@ class ImageParsingService(val project: Project) {
     private fun getParsedImageInfo(image: Image, fileType: FileType?): ImageInfo? {
         val indentedTextFragments = getIndentedTextFragments(image) ?: return null
 
-        return detectTypeAndText(indentedTextFragments, fileType)
+        return detectTypeAndProcessText(indentedTextFragments, fileType)
     }
 
 
-    fun detectTypeAndText(indentedTextFragments: Array<String>, fileType: FileType?): ImageInfo? {
+    fun detectTypeAndProcessText(indentedTextFragments: Array<String>, fileType: FileType?): ImageInfo? {
         val languageFileType: LanguageFileType = fileType as? LanguageFileType ?: PlainTextFileType.INSTANCE
         var filteredFragments = filterFragmentsByFileType(indentedTextFragments, languageFileType)
 
@@ -122,6 +122,8 @@ class ImageParsingService(val project: Project) {
         val result = indentedTextFragments.map {
             val psiFile = PsiFileFactory.getInstance(project).createFileFromText("foo", fileType, it)
             val errors = SyntaxTraverser.psiTraverser(psiFile).traverse().filter(PsiErrorElement::class.java)
+
+
 
             if (errors.size() > 0) {
                 return@map null
