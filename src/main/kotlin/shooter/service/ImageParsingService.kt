@@ -130,7 +130,7 @@ class ImageParsingService(val project: Project) {
 
             val lines = it.split("\n")
 
-            val newLines = removePrefixNumbers(lines)
+            val newLines = removeLineNumbers(removePrefixNumbers(lines))
 
             val joinedText = newLines.joinToString("\n")
 
@@ -168,5 +168,30 @@ class ImageParsingService(val project: Project) {
         }
 
         return mutableList
+    }
+
+    private fun removeLineNumbers(lines: List<String>): List<String> {
+        return lines.map {
+            if (it.isEmpty()) return@map it
+
+            if (it.startsWith(":") && it.length > 1 && it[1].isDigit() ||
+                    it[0].isDigit()) {
+                var i = if (it.startsWith(":")) 1 else 0
+
+                while (it.length > i && it[i].isDigit()) {
+                    i++
+                }
+
+                if (i == it.length) return@map ""
+
+                if (i < it.length && it[i].isWhitespace()) {
+                    return@map it.substring(i)
+                }
+
+                return@map it
+            }
+
+            return@map it
+        }
     }
 }
