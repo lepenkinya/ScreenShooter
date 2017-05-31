@@ -4,32 +4,54 @@ import com.google.gson.Gson
 import org.apache.http.client.methods.HttpPost
 import org.apache.http.client.utils.URIBuilder
 import org.apache.http.entity.FileEntity
-import org.apache.http.entity.StringEntity
 import org.apache.http.impl.client.DefaultHttpClient
 import org.apache.http.util.EntityUtils
 import java.io.File
 
 val gson = Gson()
 
+
+class CognitiveResponse {
+    var language: String = ""
+    var regions: List<Region> = emptyList()
+
+    fun allLines(): List<Coordinates> {
+        return regions.flatMap { it.lines }.map { it.coordinates }
+    }
+
+    fun words(): List<Coordinates> {
+        return regions.flatMap { it.lines }.flatMap { it.words }.map { it.coordinates }
+    }
+}
+
 class Region {
     var boundingBox: String = ""
     var lines: List<Line> = emptyList()
 }
 
+data class Coordinates(val x_left: Int, val y_up: Int, val width: Int, val height: Int)
+
+fun String.coordinates(): Coordinates {
+    val values = split(",").map { it.trim().toInt() }
+    return Coordinates(values[0], values[1], values[2], values[3])
+}
+
 class Line {
     var boundingBox: String = ""
     var words: List<Word> = emptyList()
+
+    val coordinates: Coordinates
+        get() = boundingBox.coordinates()
 }
 
 class Word {
     var boundingBox: String = ""
     var text: String = ""
+
+    val coordinates: Coordinates
+        get() = boundingBox.coordinates()
 }
 
-class CognitiveResponse {
-    var language: String = ""
-    var regions: List<Region> = emptyList()
-}
 
 object CognitiveApi {
     class Info(val endpoint: String, val key1: String, val key2: String)
@@ -56,7 +78,7 @@ object CognitiveApi {
             request.setHeader("Ocp-Apim-Subscription-Key", info.key1)
 
 
-            val file = File("erodereference.png")
+            val file = File("xxx.png")
             val requestEntity = FileEntity(file)
 
             request.entity = requestEntity
@@ -69,6 +91,10 @@ object CognitiveApi {
                 println(text)
 
                 val region = gson.fromJson(text, CognitiveResponse::class.java)
+
+                val allWords = region.words()
+                val allLines = region.allLines()
+
                 region.regions.forEach {
                     println("REGION_START")
                     it.lines.forEach {
