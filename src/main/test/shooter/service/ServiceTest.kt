@@ -28,18 +28,13 @@ class ServiceTest : LightPlatformCodeInsightFixtureTestCase() {
     @Test
     fun testRemoveIncorrectLine() {
         val project = myFixture.project
-        TestCase.assertNotNull(project)
         val service = ImageParsingService.getService(project)
-        TestCase.assertNotNull(service)
+        val template1 = "1\n2\n3\n4\n\nclass Foo {}"
 
-        val template1 = "class Foo {}"
-        val template2 = "unexpected token ' "
-        val detectTypeAndText = service.detectTypeAndProcessText(arrayOf(template1, template2), JavaFileType.INSTANCE)
+        val detectTypeAndText = service.detectTypeAndProcessText(arrayOf(template1), JavaFileType.INSTANCE)
         TestCase.assertNotNull(detectTypeAndText)
         val text = detectTypeAndText!!.text
 
-        TestCase.assertEquals(template1, text)
+        TestCase.assertEquals("\nclass Foo {}", text)
     }
-
-
 }

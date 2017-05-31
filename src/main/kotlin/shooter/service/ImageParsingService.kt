@@ -15,11 +15,13 @@ import com.intellij.psi.PsiErrorElement
 import com.intellij.psi.PsiFileFactory
 import com.intellij.psi.SyntaxTraverser
 import com.intellij.util.PathUtil
+import com.intellij.util.containers.JBIterable
 import com.intellij.util.ui.UIUtil
 import java.awt.Image
 import java.awt.image.BufferedImage
 import java.io.File
 import java.util.concurrent.atomic.AtomicLong
+import java.util.stream.IntStream
 import javax.imageio.ImageIO
 
 
@@ -114,25 +116,57 @@ class ImageParsingService(val project: Project) {
         }
 
 
-        val text = filteredFragments.joinToString(separator = "\n", transform = { it })
+        val text = filteredFragments.joinToString("\n")
         return ImageInfo(text, languageFileType)
     }
 
     fun filterFragmentsByFileType(indentedTextFragments: Array<String>, fileType: LanguageFileType): List<String> {
         val result = indentedTextFragments.map {
-            val psiFile = PsiFileFactory.getInstance(project).createFileFromText("foo", fileType, it)
-            val errors = SyntaxTraverser.psiTraverser(psiFile).traverse().filter(PsiErrorElement::class.java)
+            var errors = getErrors(fileType, it)
 
-
-
-            if (errors.size() > 0) {
-                return@map null
+            if (errors.size() <= 0) {
+                return@map it
             }
 
-            return@map it
+            val lines = it.split("\n")
+
+            val newLines = removePrefixNumbers(lines)
+
+            val joinedText = newLines.joinToString("\n")
+
+            errors = getErrors(fileType, joinedText)
+            if (errors.size() <= 0) {
+                return@map joinedText
+            }
+
+            return@map joinedText
 
         }.filterNotNull()
 
         return result
+    }
+
+    private fun getErrors(fileType: LanguageFileType, it: String): JBIterable<PsiErrorElement> {
+        val psiFile = PsiFileFactory.getInstance(project).createFileFromText("foo", fileType, it)
+        val errors = SyntaxTraverser.psiTraverser(psiFile).traverse().filter(PsiErrorElement::class.java)
+        return errors
+    }
+
+    private fun removePrefixNumbers(lines: List<String>): List<String> {
+        val mutableList = lines.toMutableList()
+
+        @Suppress("LoopToCallChain")
+        for (line in lines) {
+            if (line.isEmpty()) continue
+
+            try {
+                Integer.parseInt(line)
+                mutableList.remove(line)
+            } catch (e: NumberFormatException) {
+                break
+            }
+        }
+
+        return mutableList
     }
 }
