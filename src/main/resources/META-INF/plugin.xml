@@ -11,6 +11,7 @@
     <idea-version since-build="171.0"/>
 
     <extensions defaultExtensionNs="com.intellij">
+        <postStartupActivity implementation="shooter.editor.OverrideDropHandlerActivity"/>
     </extensions>
 
     <actions>
