@@ -31,6 +31,8 @@ class DropHandler(editor: Editor) : FileDropHandler(editor) {
             val text = "Dnd handler Image " + image.javaClass
             logger.info(text)
             println(text)
+
+            return
         }
 
         super.handleDrop(t, project, editorWindow)
