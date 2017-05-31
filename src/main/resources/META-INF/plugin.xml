@@ -1,0 +1,26 @@
+<idea-plugin>
+    <id>com.intellij.shooter</id>
+    <name>ScreenShooter</name>
+    <version>0.0.007</version>
+    <vendor>TeamA</vendor>
+
+    <description>Description</description>
+
+    <change-notes>Change Notes</change-notes>
+
+    <idea-version since-build="171.0"/>
+
+    <extensions defaultExtensionNs="com.intellij">
+    </extensions>
+
+    <actions>
+        <action class="shooter.ScreenShooter" id="Test"/>
+    </actions>
+
+    <project-components>
+    </project-components>
+
+    <application-components>
+    </application-components>
+
+</idea-plugin>

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/.idea/ScreenShooter.iml" filepath="$PROJECT_DIR$/.idea/ScreenShooter.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/ScreenShooter_main.iml" filepath="$PROJECT_DIR$/.idea/modules/ScreenShooter_main.iml" group="ScreenShooter" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/ScreenShooter_test.iml" filepath="$PROJECT_DIR$/.idea/modules/ScreenShooter_test.iml" group="ScreenShooter" />
+    </modules>
+  </component>
+</project>

@@ -1,0 +1,52 @@
+buildscript {
+    ext.kotlin_version = kotlinVersion
+
+    repositories {
+        mavenCentral()
+        maven { url 'http://dl.bintray.com/jetbrains/intellij-plugin-service' }
+        maven { url 'http://dl.bintray.com/kotlin/kotlin-eap-1.1' }
+    }
+
+    dependencies {
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion"
+    }
+}
+
+plugins {
+    id "org.jetbrains.intellij" version "0.2.3"
+}
+
+allprojects {
+    apply plugin: 'java'
+    apply plugin: 'kotlin'
+
+    sourceCompatibility = javaVersion
+    targetCompatibility = javaVersion
+}
+
+intellij {
+    pluginName "ScreenShooter"
+    sameSinceUntilBuild Boolean.FALSE
+    updateSinceUntilBuild Boolean.FALSE
+}
+
+allprojects {
+    repositories {
+        mavenCentral()
+        maven { url 'http://dl.bintray.com/kotlin/kotlin-eap-1.1' }
+    }
+}
+
+allprojects {
+    dependencies {
+        compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
+        compile "org.jetbrains.kotlin:kotlin-runtime:$kotlinVersion"
+        compile "org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion"
+        compile 'com.google.code.gson:gson:2.8.0'
+
+        testCompile "com.nhaarman:mockito-kotlin:1.3.0"
+        testCompile 'org.mockito:mockito-core:2.7.6'
+        testCompile 'org.assertj:assertj-core:3.5.2'
+        testCompile 'junit:junit:4.12'
+    }
+}
