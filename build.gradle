@@ -34,6 +34,9 @@ allprojects {
     repositories {
         mavenCentral()
         maven { url 'http://dl.bintray.com/kotlin/kotlin-eap-1.1' }
+        flatDir {
+            dirs 'libs'
+        }
     }
 }
 
@@ -43,6 +46,7 @@ allprojects {
         compile "org.jetbrains.kotlin:kotlin-runtime:$kotlinVersion"
         compile "org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion"
         compile 'com.google.code.gson:gson:2.8.0'
+        compile name: 'opencv-320'
         //compile 'net.sourceforge.tess4j:tess4j:3.3.1'
         //compile 'com.asprise.ocr:java-ocr-api:15.3.0.3'
 
