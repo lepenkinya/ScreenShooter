@@ -63,7 +63,7 @@ object CognitiveApi {
     }
 
 
-    fun check() {
+    fun check(inputName: String) {
         val httpClient = DefaultHttpClient()
 
         try {
@@ -77,8 +77,6 @@ object CognitiveApi {
 
             request.setHeader("Content-Type", "application/octet-stream")
             request.setHeader("Ocp-Apim-Subscription-Key", info.key1)
-
-            val inputName = "grayblurreference.png"
 
             val file = File(inputName)
             val requestEntity = FileEntity(file)
@@ -119,6 +117,6 @@ object CognitiveApi {
 
 
 fun main(args: Array<String>) {
-    CognitiveApi.check()
+    CognitiveApi.check("xxx.png")
     println()
 }

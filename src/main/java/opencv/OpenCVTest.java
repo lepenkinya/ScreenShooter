@@ -3,8 +3,10 @@ package opencv;
 import org.opencv.core.*;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
+import recognition.CognitiveApi;
 import recognition.Coordinates;
 
+import java.io.File;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -12,7 +14,77 @@ import java.util.Random;
 
 public class OpenCVTest {
 
+    /*THIS IS INTENDED TO BE API*/
     public static final double epsilon = 10.0;
+
+    public static void filterTextRectangles(Mat source, List<Coordinates> words, int samplePointsCount, double epsilon, double threshold) {
+        double[] backgroundColor = getMaxColor(source).toPoint();
+        int diffColorSize = 0;
+        for (Coordinates coords : words) {
+            for (int i = 0; i < samplePointsCount; ++i) {
+                int side = myRandom.nextInt(4);
+                int aY = side & 1;
+                int aX = 1 - aY;
+                int dX = (side & 2) & aY;
+                int dY = (side & 2) & (1 - dX);
+                double alpha = myRandom.nextDouble();
+                int x = new Double(coords.getX_left() + (dX + alpha * aX) * coords.getWidth()).intValue();
+                int y = new Double(coords.getY_up() + (dY + alpha * aY) * coords.getHeight()).intValue();
+                if (!isDiffOk(backgroundColor, source.get(y, x), epsilon)) {
+                    diffColorSize ++;
+                }
+            }
+            if (diffColorSize >= samplePointsCount * threshold) {
+                //fill the whole rectangle
+                Mat mask = new Mat(source.height() + 2, source.width() + 2, Imgcodecs.CV_LOAD_IMAGE_GRAYSCALE);
+                Imgproc.floodFill(source, mask, new Point(coords.getX_left(), coords.getY_up()),
+                        new Scalar(backgroundColor));
+
+            }
+        }
+    }
+
+    public static Mat filterPreprocessing(String image) {
+        Mat source = Imgcodecs.imread(image,  Imgcodecs.CV_LOAD_IMAGE_COLOR);
+        simplifyColors(source, source, 3);
+        Mat destination = Imgcodecs.imread(image,  Imgcodecs.CV_LOAD_IMAGE_COLOR);
+
+        PixelColor maxColor = getMaxColor(source);
+
+        int filterOffset = 1;
+        long replaceCount = 0;
+        for (int x = filterOffset; x < source.width() - filterOffset; ++x) {
+            for (int y = filterOffset; y < source.height() - filterOffset; ++y) {
+                double[] center = source.get(y, x);
+                if (isSizeOneTemplate(source, x, y, epsilon)) {//centerCount <= 5) {
+                    //replace current pixel
+                    replaceCount++;
+                    double[] placeholder = maxColor.toPoint();
+                    destination.put(y, x, placeholder);
+                    //System.arraycopy(average, 0, dst, 0, dst.length);
+                } else {
+                    destination.put(y, x, center);
+                    //System.arraycopy(center, 0, dst, 0, dst.length);
+                }
+            }
+        }
+        Imgproc.cvtColor(destination, destination, Imgproc.COLOR_RGB2GRAY);
+        return destination;
+    }
+
+    public static String preprocess(String imageName) {
+        Mat intermediate = filterPreprocessing(imageName);
+        File imageFile = new File(imageName);
+        String irName = (imageFile.getParent() == null ? "" : imageFile.getParent() + "/") + "IR" + imageFile.getName();;
+        Imgcodecs.imwrite(irName, intermediate);
+        CognitiveApi.INSTANCE.check(irName);
+        return getPreprocessedName(irName);
+    }
+
+    public static String getPreprocessedName(String basePath) {
+        File imageFile = new File(basePath);
+        return (imageFile.getParent() == null ? "" : imageFile.getParent() + "/") + "DONE_" + imageFile.getName().substring(2);
+    }
 
     static class PixelColor {
         final double red;
@@ -118,66 +190,18 @@ public class OpenCVTest {
 
     public static void main(String[] args) {
         String image = args[0];
-
-        Mat source = Imgcodecs.imread(image,  Imgcodecs.CV_LOAD_IMAGE_COLOR);
-        simplifyColors(source, source, 3);
-        Mat destination = Imgcodecs.imread(image,  Imgcodecs.CV_LOAD_IMAGE_COLOR);
-
-        PixelColor maxColor = getMaxColor(source);
-
-        int filterOffset = 1;
-        long replaceCount = 0;
-        for (int x = filterOffset; x < source.width() - filterOffset; ++x) {
-            for (int y = filterOffset; y < source.height() - filterOffset; ++y) {
-                double[] center = source.get(y, x);
-                if (isSizeOneTemplate(source, x, y, epsilon)) {//centerCount <= 5) {
-                    //replace current pixel
-                    replaceCount++;
-                    double[] placeholder = maxColor.toPoint();
-                    destination.put(y, x, placeholder);
-                    //System.arraycopy(average, 0, dst, 0, dst.length);
-                } else {
-                    destination.put(y, x, center);
-                    //System.arraycopy(center, 0, dst, 0, dst.length);
-                }
-            }
-        }
-        System.out.println("Replaced " + replaceCount + " out of " + source.height() * 1.0* source.width());
-        Imgcodecs.imwrite("blur"+image, destination);
-        Imgproc.cvtColor(destination, destination, Imgproc.COLOR_RGB2GRAY);
-        Imgcodecs.imwrite("grayblur"+image, destination);
+        preprocess(image);
+//        Mat res = filterPreprocessing(image);
+//
+//        Imgcodecs.imwrite("grayblur"+image, res);
     }
 
     public static Random myRandom = new Random(System.currentTimeMillis());
 
     public static void filterTextRectangles(String input, List<Coordinates> words, int samplePointsCount, double epsilon, double threshold) {
         Mat source = Imgcodecs.imread(input,  Imgcodecs.CV_LOAD_IMAGE_COLOR);
-        double[] backgroundColor = getMaxColor(source).toPoint();
-        int diffColorSize = 0;
-        for (Coordinates coords : words) {
-            for (int i = 0; i < samplePointsCount; ++i) {
-                int side = myRandom.nextInt(4);
-                int aY = side & 1;
-                int aX = 1 - aY;
-                int dX = (side & 2) & aY;
-                int dY = (side & 2) & (1 - dX);
-                double alpha = myRandom.nextDouble();
-                int x = new Double(coords.getX_left() + (dX + alpha * aX) * coords.getWidth()).intValue();
-                int y = new Double(coords.getY_up() + (dY + alpha * aY) * coords.getHeight()).intValue();
-                if (!isDiffOk(backgroundColor, source.get(y, x), epsilon)) {
-                    diffColorSize ++;
-                }
-            }
-            if (diffColorSize >= samplePointsCount * threshold) {
-                //fill the whole rectangle
-                Mat mask = new Mat(source.height() + 2, source.width() + 2, Imgcodecs.CV_LOAD_IMAGE_GRAYSCALE);
-                Imgproc.floodFill(source, mask, new Point(coords.getX_left(), coords.getY_up()),
-                        new Scalar(backgroundColor));
-
-            }
-        }
-        Imgcodecs.imwrite("rectangle_recolored"+input, source);
-
+        filterTextRectangles(source, words, samplePointsCount, epsilon, threshold);
+        Imgcodecs.imwrite(getPreprocessedName(input), source);
     }
 
     public static void addRectangles(String input, List<Coordinates> words, List<Coordinates> lines) {
