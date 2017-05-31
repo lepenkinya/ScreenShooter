@@ -1,1 +1,5 @@
 src/main/resources/api.json
+build
+gradle
+.idea
+.gradle
