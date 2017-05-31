@@ -12,6 +12,8 @@
 
     <extensions defaultExtensionNs="com.intellij">
         <postStartupActivity implementation="shooter.editor.OverrideDropHandlerActivity"/>
+        <projectService serviceInterface="shooter.service.ImageParsingService"
+                        serviceImplementation="shooter.service.ImageParsingService"/>
     </extensions>
 
     <actions>
