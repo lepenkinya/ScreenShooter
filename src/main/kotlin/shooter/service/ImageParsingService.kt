@@ -21,6 +21,7 @@ import com.intellij.psi.codeStyle.CodeStyleManager
 import com.intellij.util.PathUtil
 import com.intellij.util.containers.JBIterable
 import recognizer.Integration
+import shooter.preview.CropSelectionDialog
 import java.awt.Image
 
 
@@ -38,6 +39,12 @@ class ImageParsingService(val project: Project) {
 
     fun processImage(image: Image, fileType: FileType?, fileToUse: VirtualFile?) {
         ApplicationManager.getApplication().invokeLater({
+            val dialog = CropSelectionDialog(project, image)
+            dialog.show()
+            if (!dialog.isOK) {
+                return@invokeLater
+            }
+
             ProgressManager.getInstance().runProcessWithProgressSynchronously({
                 processImageImpl(image, fileType, fileToUse)
             }, "Process image", true, project)
