@@ -42,7 +42,7 @@ class ServiceIntegrationTest : LightPlatformCodeInsightFixtureTestCase() {
         }
         val service = ImageParsingService.getService(project)
 
-        val resultInfo = service.getParsedImageInfo(img, fileType)
+        val resultInfo = service.getParsedImageInfo(ImageParsingService.ImageWithCrop(img, null), fileType)
         return resultInfo
     }
 
