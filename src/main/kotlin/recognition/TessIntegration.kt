@@ -11,6 +11,10 @@ import java.io.File
 
 class TessIntegration(val tessInstance: ITesseract = Tesseract()) {
 
+    companion object Instance {
+        val instance = TessIntegration()
+    }
+
 
     fun recognize(path: String): String {
         return runCommandLine(path)

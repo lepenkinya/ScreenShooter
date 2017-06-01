@@ -3,6 +3,7 @@ package shooter.service
 import com.intellij.ide.scratch.ScratchFileService
 import com.intellij.ide.scratch.ScratchRootType
 import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.application.ReadAction
 import com.intellij.openapi.components.ServiceManager
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.fileEditor.FileEditorManager
@@ -17,11 +18,13 @@ import com.intellij.psi.SyntaxTraverser
 import com.intellij.util.PathUtil
 import com.intellij.util.containers.JBIterable
 import com.intellij.util.ui.UIUtil
+import opencv.OpenCVTest
+import recognition.ConverterIntegration
+import recognition.TessIntegration
 import java.awt.Image
 import java.awt.image.BufferedImage
 import java.io.File
 import java.util.concurrent.atomic.AtomicLong
-import java.util.stream.IntStream
 import javax.imageio.ImageIO
 
 
@@ -48,6 +51,8 @@ class ImageParsingService(val project: Project) {
 
 
     private fun processImageImpl(image: Image, fileType: FileType?) {
+
+
         val info = getParsedImageInfo(image, fileType) ?: return
 
         val language = info.fileType.language
@@ -94,15 +99,21 @@ class ImageParsingService(val project: Project) {
     private fun getIndentedTextFragments(image: Image): Array<String>? {
         val ioFile = saveImageAsIOFile(image) ?: return null
         logMessages("Created file for image ${ioFile.absolutePath}")
+        var afterPreprocessed = OpenCVTest.preprocess(ioFile.absolutePath)
+        if (!File(afterPreprocessed).exists()) {
+            afterPreprocessed = ioFile.absolutePath
+        }
+        val readyForParsing = ConverterIntegration.instance.convertIfRequired(afterPreprocessed)
+        val recognizeText = TessIntegration.instance.recognize(readyForParsing)
 
-        return arrayOf("class Foo {}")
+        return arrayOf(recognizeText)
     }
 
 
     private fun getParsedImageInfo(image: Image, fileType: FileType?): ImageInfo? {
         val indentedTextFragments = getIndentedTextFragments(image) ?: return null
 
-        return detectTypeAndProcessText(indentedTextFragments, fileType)
+        return ReadAction.compute<ImageInfo?, RuntimeException> { detectTypeAndProcessText(indentedTextFragments, fileType) }
     }
 
 
