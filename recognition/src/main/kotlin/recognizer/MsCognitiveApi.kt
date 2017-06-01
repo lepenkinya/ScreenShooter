@@ -1,4 +1,4 @@
-package recognition
+package recognizer
 
 import com.google.gson.Gson
 import opencv.OpenCVTest

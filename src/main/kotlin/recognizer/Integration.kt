@@ -1,17 +1,12 @@
-package recognition
+package recognizer
 
 import com.google.common.net.HttpHeaders
-import com.intellij.execution.configurations.GeneralCommandLine
-import com.intellij.execution.configurations.PathEnvironmentVariableUtil
-import com.intellij.execution.util.ExecUtil
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.util.io.FileUtil
 import com.intellij.util.ui.UIUtil
-import opencv.OpenCVTest
 import org.apache.http.client.fluent.Request
 import org.apache.http.util.EntityUtils
-import recognition.web.recognize
 import java.awt.Image
 import java.awt.image.BufferedImage
 import java.io.File
@@ -29,10 +24,10 @@ class Integration {
 
     val nextNumber = AtomicLong()
 
-    fun runForImage(image: Image): String {
+    fun runForImage(image: Image, tessPath: String, convertPath: String): String {
         val ioFile = saveImageAsIOFile(image) ?: return ""
         if (ApplicationManager.getApplication().isUnitTestMode) {
-            return recognize(ioFile.absolutePath).text
+            return recognize(ioFile.absolutePath, tessPath, convertPath).text
         }
 
         val request = Request.Post("http://localhost:4567/ocr")

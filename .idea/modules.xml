@@ -5,6 +5,9 @@
       <module fileurl="file://$PROJECT_DIR$/.idea/ScreenShooter.iml" filepath="$PROJECT_DIR$/.idea/ScreenShooter.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/ScreenShooter_main.iml" filepath="$PROJECT_DIR$/.idea/modules/ScreenShooter_main.iml" group="ScreenShooter" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/ScreenShooter_test.iml" filepath="$PROJECT_DIR$/.idea/modules/ScreenShooter_test.iml" group="ScreenShooter" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/recognition/recognition.iml" filepath="$PROJECT_DIR$/.idea/modules/recognition/recognition.iml" group="recognition" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/recognition/recognition_main.iml" filepath="$PROJECT_DIR$/.idea/modules/recognition/recognition_main.iml" group="recognition" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/recognition/recognition_test.iml" filepath="$PROJECT_DIR$/.idea/modules/recognition/recognition_test.iml" group="recognition" />
     </modules>
   </component>
 </project>

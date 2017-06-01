@@ -2,6 +2,10 @@
 <project version="4">
   <component name="CompilerConfiguration">
     <bytecodeTargetLevel>
+      <module name="recognition_main" target="1.8" />
+      <module name="recognition_test" target="1.8" />
+      <module name="remote_main" target="1.8" />
+      <module name="remote_test" target="1.8" />
       <module name="ScreenShooter_main" target="1.8" />
       <module name="ScreenShooter_test" target="1.8" />
     </bytecodeTargetLevel>

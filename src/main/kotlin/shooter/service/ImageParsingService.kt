@@ -1,5 +1,6 @@
 package shooter.service
 
+import com.intellij.execution.configurations.PathEnvironmentVariableUtil
 import com.intellij.ide.scratch.ScratchFileService
 import com.intellij.ide.scratch.ScratchRootType
 import com.intellij.lang.Language
@@ -19,7 +20,7 @@ import com.intellij.psi.*
 import com.intellij.psi.codeStyle.CodeStyleManager
 import com.intellij.util.PathUtil
 import com.intellij.util.containers.JBIterable
-import recognition.Integration
+import recognizer.Integration
 import java.awt.Image
 
 
@@ -110,7 +111,9 @@ class ImageParsingService(val project: Project) {
 
 
     private fun getIndentedTextFragments(image: Image): Array<String>? {
-        val resultText = Integration.instance.runForImage(image)
+        val tessPath = PathEnvironmentVariableUtil.findInPath("tesseract")!!.absolutePath
+        val convertPath = PathEnvironmentVariableUtil.findInPath("convert")!!.absolutePath
+        val resultText = Integration.instance.runForImage(image, tessPath, convertPath)
         return arrayOf(resultText)
     }
 

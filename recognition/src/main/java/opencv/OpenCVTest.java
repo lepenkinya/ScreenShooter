@@ -3,8 +3,8 @@ package opencv;
 import org.opencv.core.*;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
-import recognition.CognitiveApi;
-import recognition.Coordinates;
+import recognizer.CognitiveApi;
+import recognizer.Coordinates;
 
 import java.io.File;
 import java.util.HashMap;

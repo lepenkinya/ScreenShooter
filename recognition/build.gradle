@@ -1,0 +1,5 @@
+dependencies {
+    compile files('libs/opencv-320.jar')
+    compile 'org.zeroturnaround:zt-exec:1.9'
+    compile 'org.apache.httpcomponents:fluent-hc:4.5.3'
+}
