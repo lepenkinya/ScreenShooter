@@ -11,6 +11,10 @@ import shooter.service.ImageParsingService
 import java.awt.Image
 import java.awt.datatransfer.DataFlavor
 import java.awt.datatransfer.Transferable
+import java.io.File
+import javax.activation.MimetypesFileTypeMap
+import javax.imageio.ImageIO
+
 
 class DropHandler(val editor: Editor) : FileDropHandler(editor) {
 
@@ -52,8 +56,15 @@ class DropHandler(val editor: Editor) : FileDropHandler(editor) {
 
         if (t.isDataFlavorSupported(DataFlavor.javaFileListFlavor)) {
             val fileList = t.getTransferData(DataFlavor.javaFileListFlavor)
-            if (fileList != null) {
-
+            if (fileList != null && fileList is List<*> && fileList.size == 1) {
+                val file = fileList[0]
+                if (file is File && file.exists()) {
+                    val mimetype = MimetypesFileTypeMap().getContentType(file)
+                    val type = mimetype.split("/")[0]
+                    if (type == "image") {
+                        return ImageIO.read(file)
+                    }
+                }
             }
         }
 
