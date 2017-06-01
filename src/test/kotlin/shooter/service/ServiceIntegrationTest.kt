@@ -95,4 +95,20 @@ class ServiceIntegrationTest : LightPlatformCodeInsightFixtureTestCase() {
         doTestForFile(PlainTextFileType.INSTANCE)
     }
 
+    fun testClean() {
+        doTestForFile(PlainTextFileType.INSTANCE)
+    }
+
+    fun testClean_white() {
+        doTestForFile(PlainTextFileType.INSTANCE)
+    }
+
+    fun testHigh_resolution_white_ref() {
+        doTestForFile(PlainTextFileType.INSTANCE)
+    }
+
+    fun testScreenshot_2017() {
+        doTestForFile(PlainTextFileType.INSTANCE)
+    }
+
 }

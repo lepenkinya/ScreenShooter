@@ -1,6 +1,7 @@
 package recognizer
 
 import opencv.OpenCVTest
+import opencv.PreprocessResult
 import org.apache.commons.io.FileUtils
 import java.io.File
 
@@ -18,7 +19,7 @@ fun recognize(filePath: String, tessPath: String, debugDir: File?): RecognitionR
     val path = if (newFile.exists()) newFile.absolutePath else file.absolutePath
 
     return try {
-        val text = TessIntegration.instance.recognize(path, tessPath, debugDir)
+        val text = TessIntegration.instance.recognize(PreprocessResult(path, newImagePath.isDark), tessPath, debugDir)
         RecognitionResult(Status.OK, text)
     } catch (e: Exception) {
         RecognitionResult(Status.FAILED, e.toString())

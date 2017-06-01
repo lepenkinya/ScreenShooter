@@ -1,5 +1,6 @@
 package recognizer
 
+import opencv.PreprocessResult
 import org.apache.commons.io.FileUtils
 import org.zeroturnaround.exec.ProcessExecutor
 import java.io.File
@@ -12,8 +13,8 @@ class TessIntegration {
     }
 
 
-    fun recognize(path: String, testPass: String, debugDir: File?): String {
-        val newPath = convertIfRequired(path,debugDir)
+    fun recognize(info: PreprocessResult, testPass: String, debugDir: File?): String {
+        val newPath = convertIfRequired(info, debugDir)
         return runCommandLine(newPath, testPass)
     }
 
@@ -52,13 +53,13 @@ class TessIntegration {
         return File(resultFileName + ".txt").readText()
     }
 
-    fun convertIfRequired(path: String, debugDir: File?): String {
+    fun convertIfRequired(preprocessResult: PreprocessResult, debugDir: File?): String {
+        val path = preprocessResult.fileName
         val file = File(path)
         val directory = file.parent
         val resultFileName = directory + File.separator + file.nameWithoutExtension + "_tf.tiff"
 
-        //-density 300
-        ProcessExecutor().command(
+        val darkParams = arrayOf(
                 "convert",
                 path,
                 "-resize",
@@ -69,8 +70,20 @@ class TessIntegration {
                 "-normalize",
                 "-colorspace",
                 "gray",
-                resultFileName
-        ).redirectError(System.out)
+                resultFileName)
+
+        val whiteParams = arrayOf(
+                "convert",
+                path,
+                "-resize",
+                "300%",
+                "-threshold",
+                "80%",
+                resultFileName)
+
+
+        //-density 300
+        ProcessExecutor().command(if (preprocessResult.isDark) darkParams.toList() else whiteParams.toList()).redirectError(System.out)
                 .redirectOutput(System.out)
                 .execute()
 
