@@ -69,6 +69,8 @@ class TessIntegration {
                 path,
                 "-resize",
                 "300%",
+                "-density",
+                "300",
                 "-type",
                 "Grayscale",
                 resultFileName
