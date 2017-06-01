@@ -1,24 +1,27 @@
 package shooter.preview
 
+import sun.plugin.util.UIUtil
 import java.awt.*
-import java.awt.event.ComponentAdapter
-import java.awt.event.ComponentEvent
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
-import javax.swing.JButton
-import javax.swing.JLabel
 import javax.swing.JPanel
-import javax.swing.SwingUtilities
-import javax.swing.border.EmptyBorder
 
 
-class RectangleDrawer(val background: Image, val myPreferredSize: Dimension) : JPanel() {
+class RectangleDrawer(val imageBackground: Image, val myPreferredSize: Dimension) : JPanel() {
 
     private var mouseAnchor: Point? = null
     private var dragPoint: Point? = null
 
-    private var selectionPane: SelectionPane? = null
+    private val selectionPane: SelectionPane
 
+    fun getRectangle(): Rectangle? {
+        val size = selectionPane.size
+        if (size.height == 0 && size.width == 0) {
+            return null
+        }
+
+        return Rectangle(selectionPane.x, selectionPane.y, selectionPane.width, selectionPane.height)
+    }
 
     init {
 
@@ -30,8 +33,8 @@ class RectangleDrawer(val background: Image, val myPreferredSize: Dimension) : J
             override fun mousePressed(e: MouseEvent) {
                 mouseAnchor = e.point
                 dragPoint = null
-                selectionPane!!.location = mouseAnchor!!
-                selectionPane!!.setSize(0, 0)
+                selectionPane.location = mouseAnchor!!
+                selectionPane.setSize(0, 0)
             }
 
             override fun mouseDragged(e: MouseEvent) {
@@ -50,8 +53,8 @@ class RectangleDrawer(val background: Image, val myPreferredSize: Dimension) : J
                     y = dragPoint!!.y
                     height *= -1
                 }
-                selectionPane!!.setBounds(x, y, width, height)
-                selectionPane!!.revalidate()
+                selectionPane.setBounds(x, y, width, height)
+                selectionPane.revalidate()
                 repaint()
             }
 
@@ -65,8 +68,9 @@ class RectangleDrawer(val background: Image, val myPreferredSize: Dimension) : J
         super.paintComponent(g)
         val r = bounds
         val g2d = g.create()
-        g2d.drawImage(background, 0, 0, this)
-        g2d.drawImage(background, 0, 0, if (r.width > width) width else r.width, if (r.height > height) height else r.height, this)
+
+        g2d.drawImage(imageBackground, 0, 0, if (r.width > width) width else r.width, if (r.height > height) height else r.height, this)
+
 
         g2d.dispose()
     }
@@ -92,13 +96,7 @@ class RectangleDrawer(val background: Image, val myPreferredSize: Dimension) : J
             g2d.color = Color(128, 128, 128, 64)
             g2d.fillRect(0, 0, width, height)
 
-            val dash1 = floatArrayOf(10.0f)
-//            val dashed = BasicStroke(2.0f,
-//                    BasicStroke.CAP_BUTT,
-//                    BasicStroke.JOIN_MITER,
-//                    10.0f, dash1, 0.0f)
             g2d.color = Color.BLACK
-//            (g2d as? Graphics2D)?.stroke = dash1
             g2d.drawRect(0, 0, width - 3, height - 3)
             g2d.dispose()
         }

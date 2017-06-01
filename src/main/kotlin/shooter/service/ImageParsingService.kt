@@ -19,16 +19,21 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.*
 import com.intellij.psi.codeStyle.CodeStyleManager
 import com.intellij.util.PathUtil
+import com.intellij.util.RetinaImage
 import com.intellij.util.containers.JBIterable
+import com.intellij.util.ui.UIUtil
 import recognizer.Integration
 import shooter.preview.CropSelectionDialog
 import java.awt.Image
+import java.awt.Rectangle
 
 
 class ImageParsingService(val project: Project) {
 
     data class ImageInfo(val text: String, val fileType: LanguageFileType, val canFormat: Boolean = false)
 
+
+    data class ImageWithCrop(val image: Image, val rect: Rectangle?)
 
     companion object ServiceHolder {
         fun getService(project: Project): ImageParsingService {
@@ -37,7 +42,9 @@ class ImageParsingService(val project: Project) {
     }
 
 
-    fun processImage(image: Image, fileType: FileType?, fileToUse: VirtualFile?) {
+    fun processImage(imageResult: Image, fileType: FileType?, fileToUse: VirtualFile?) {
+        val image = imageResult
+
         ApplicationManager.getApplication().invokeLater({
             val dialog = CropSelectionDialog(project, image)
             dialog.show()
@@ -45,14 +52,16 @@ class ImageParsingService(val project: Project) {
                 return@invokeLater
             }
 
+            val rectangle = dialog.getRectangle()
+
             ProgressManager.getInstance().runProcessWithProgressSynchronously({
-                processImageImpl(image, fileType, fileToUse)
+                processImageImpl(ImageWithCrop(image, rectangle), fileType, fileToUse)
             }, "Process image", true, project)
         })
     }
 
 
-    private fun processImageImpl(image: Image, fileType: FileType?, fileToUse: VirtualFile?) {
+    private fun processImageImpl(image: ImageWithCrop, fileType: FileType?, fileToUse: VirtualFile?) {
 
 
         val info: ImageInfo = getParsedAndFormattedImageInfo(image, fileType) ?: return
@@ -117,21 +126,19 @@ class ImageParsingService(val project: Project) {
     }
 
 
-    private fun getIndentedTextFragments(image: Image): Array<String>? {
-        val tessPath = PathEnvironmentVariableUtil.findInPath("tesseract")!!.absolutePath
-        val convertPath = PathEnvironmentVariableUtil.findInPath("convert")!!.absolutePath
-        val resultText = Integration.instance.runForImage(image, tessPath, convertPath)
+    private fun getIndentedTextFragments(image: ImageWithCrop): Array<String>? {
+        val resultText = Integration.instance.runForImage(image)
         return arrayOf(resultText)
     }
 
 
-    fun getParsedAndFormattedImageInfo(image: Image, fileType: FileType?): ImageInfo? {
+    fun getParsedAndFormattedImageInfo(image: ImageWithCrop, fileType: FileType?): ImageInfo? {
         val info: ImageInfo = getParsedImageInfo(image, fileType) ?: return null
 
         return getFormattedInfo(info)
     }
 
-    fun getParsedImageInfo(image: Image, fileType: FileType?): ImageInfo? {
+    fun getParsedImageInfo(image: ImageWithCrop, fileType: FileType?): ImageInfo? {
         val indentedTextFragments = getIndentedTextFragments(image) ?: return null
 
         return ReadAction.compute<ImageInfo?, RuntimeException> { detectTypeAndProcessText(indentedTextFragments, fileType) }
