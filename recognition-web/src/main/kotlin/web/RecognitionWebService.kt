@@ -1,5 +1,6 @@
 package web
 
+import opencv.OpenCVTest
 import recognizer.RecognitionResult
 import recognizer.Status
 import recognizer.recognize
@@ -11,6 +12,8 @@ import java.util.concurrent.atomic.AtomicInteger
 
 //0.0.0.0:4567
 fun main(args: Array<String>) {
+    OpenCVTest()
+
     val http = ignite()
 
     val tessPath = "tesseract"
@@ -18,7 +21,7 @@ fun main(args: Array<String>) {
 
     val recognitionService = RecognitionWebService(tessPath, convertPath)
 
-    http.get("/hello") { _, _ -> "Hello World v.128" }
+    http.get("/hello") { _, _ -> "Hello World v.2" }
     http.post("/ocr", { request: Request, response: Response ->
         val type = request.headers("Content-Type")
         println("Type: $type")

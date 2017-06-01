@@ -1,5 +1,6 @@
 package opencv;
 
+import nu.pattern.OpenCV;
 import org.opencv.core.*;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
@@ -116,7 +117,9 @@ public class OpenCVTest {
         }
     }
 
-    static{ System.loadLibrary(Core.NATIVE_LIBRARY_NAME); }
+    static {
+        OpenCV.loadLocally();
+    }
 
     public static boolean isDiffOk(double[] first, double[] second, double epsilon) {
         for (int i = 0; i < first.length; ++i) {
