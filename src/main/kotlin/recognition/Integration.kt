@@ -1,6 +1,9 @@
 package recognition
 
 import com.google.common.net.HttpHeaders
+import com.intellij.execution.configurations.GeneralCommandLine
+import com.intellij.execution.configurations.PathEnvironmentVariableUtil
+import com.intellij.execution.util.ExecUtil
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.util.io.FileUtil
@@ -51,11 +54,6 @@ class Integration {
     }
 
 
-    fun convertIfRequired(path: String): String {
-
-
-        return path
-    }
 
     fun saveImageAsIOFile(image: Image): File? {
         try {

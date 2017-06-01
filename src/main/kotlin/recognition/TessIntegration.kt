@@ -15,9 +15,11 @@ class TessIntegration(val tessInstance: ITesseract = Tesseract()) {
         val instance = TessIntegration()
     }
 
+    val doConvert: Boolean = true
+    val convertResize: Int = 400
 
     fun recognize(path: String): String {
-        return runCommandLine(path)
+        return runCommandLine(convertIfRequired(path))
     }
 
     private fun runCommandLine(path: String): String {
@@ -43,4 +45,35 @@ class TessIntegration(val tessInstance: ITesseract = Tesseract()) {
 
         return results.joinToString(separator = "\n")
     }
+
+    fun convertIfRequired(path: String): String {
+        if (!doConvert) return path
+
+
+        val file = File(path)
+        val directory = file.parent
+        val resultFileName = FileUtil.toSystemDependentName(directory + "/" + FileUtil.getNameWithoutExtension(file.name) + "_tf.tiff")
+
+
+        val tessPath = PathEnvironmentVariableUtil.findInPath("convert")
+        if (tessPath == null || !tessPath.exists()) {
+            return path
+        }
+
+        println("Path: " + tessPath.absolutePath)
+        val generalCommandLine = GeneralCommandLine(
+                tessPath.absolutePath, "-resize",
+                convertResize.toString() + "%",
+                "-type",
+                "Grayscale",
+                resultFileName)
+
+        val output = ExecUtil.execAndGetOutput(generalCommandLine)
+
+        println("out lines: " + output.stdoutLines)
+        println("err lines: " + output.stderrLines)
+
+        return resultFileName
+    }
+
 }

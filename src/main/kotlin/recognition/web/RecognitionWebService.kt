@@ -2,6 +2,7 @@ package recognition.web
 
 import opencv.OpenCVTest
 import recognition.CognitiveApi
+import recognition.Integration
 import recognition.TessIntegration
 import recognition.web.Status.*
 import spark.Redirect
