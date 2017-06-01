@@ -1,7 +1,6 @@
 package opencv;
 
 import nu.pattern.OpenCV;
-import org.jetbrains.annotations.Nullable;
 import org.opencv.core.*;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
@@ -20,7 +19,7 @@ public class OpenCVTest {
     public static final double epsilon = 10.0;
 
     public static void filterTextRectangles(Mat source, List<Coordinates> words, int samplePointsCount, double epsilon, double threshold) {
-        double[] backgroundColor = getMaxColor(source).toPoint();
+        double[] backgroundColor = backgroundColor(source).toPoint();
         int diffColorSize = 0;
         for (Coordinates coords : words) {
             for (int i = 0; i < samplePointsCount; ++i) {
@@ -51,7 +50,7 @@ public class OpenCVTest {
         simplifyColors(source, source, 3);
         Mat destination = Imgcodecs.imread(image,  Imgcodecs.CV_LOAD_IMAGE_COLOR);
 
-        PixelColor maxColor = getMaxColor(source);
+        PixelColor maxColor = backgroundColor(source);
 
         int filterOffset = 1;
         long replaceCount = 0;
@@ -81,7 +80,7 @@ public class OpenCVTest {
         String irName = (imageFile.getParent() == null ? "" : imageFile.getParent() + "/") + "IR" + imageFile.getName();
         Imgcodecs.imwrite(irName, intermediate);
         CognitiveApi.INSTANCE.check(irName);
-        return new PreprocessResult(getPreprocessedName(irName), getMaxColor(intermediate).isDark());
+        return new PreprocessResult(getPreprocessedName(irName), backgroundColor(intermediate).isDark());
     }
 
     public static String getPreprocessedName(String basePath) {
@@ -91,7 +90,7 @@ public class OpenCVTest {
         return (imageFile.getParent() == null ? "" : imageFile.getParent() + "/") + "DONE_" + imageFile.getName().substring(2);
     }
 
-    static class PixelColor {
+    public static class PixelColor {
         final double red;
         final double blue;
         final double green;
@@ -116,7 +115,7 @@ public class OpenCVTest {
         public int hashCode() {
             return (int) Math.round(red + blue + green);
         }
-        double[] toPoint() {
+        public double[] toPoint() {
             return new double[]{red, blue, green};
         }
         boolean isDark() {
@@ -206,7 +205,7 @@ public class OpenCVTest {
         return centerCount;
     }
 
-    public static PixelColor getMaxColor(Mat source) {
+    public static PixelColor backgroundColor(Mat source) {
         Map<PixelColor, Integer> colorMap = new HashMap<>();
 
         for (int x = 0; x < source.width(); ++x) {
