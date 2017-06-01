@@ -4,7 +4,7 @@ import opencv.OpenCVTest
 import java.io.File
 
 
-fun recognize(filePath: String, tessPath: String, convertPath: String): RecognitionResult {
+fun recognize(filePath: String, tessPath: String): RecognitionResult {
     val file = File(filePath)
     val newImagePath = OpenCVTest.preprocess(file.absolutePath)
     val newFile = File(newImagePath)
@@ -12,7 +12,7 @@ fun recognize(filePath: String, tessPath: String, convertPath: String): Recognit
     val path = if (newFile.exists()) newFile.absolutePath else file.absolutePath
 
     return try {
-        val text = TessIntegration.instance.recognize(path, tessPath, convertPath)
+        val text = TessIntegration.instance.recognize(path, tessPath)
         RecognitionResult(Status.OK, text)
     } catch (e: Exception) {
         RecognitionResult(Status.FAILED, e.toString())

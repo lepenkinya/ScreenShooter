@@ -58,7 +58,7 @@ class RecognitionWebService(val tessPath: String,
 
         val result: RecognitionResult
         try {
-            result = recognize(filename, tessPath, convertPath)
+            result = recognize(filename, tessPath)
         } finally {
             dirName.deleteRecursively()
         }

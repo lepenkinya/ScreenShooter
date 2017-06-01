@@ -77,7 +77,7 @@ public class OpenCVTest {
     public static String preprocess(String imageName) {
         Mat intermediate = filterPreprocessing(imageName);
         File imageFile = new File(imageName);
-        String irName = (imageFile.getParent() == null ? "" : imageFile.getParent() + "/") + "IR" + imageFile.getName();;
+        String irName = (imageFile.getParent() == null ? "" : imageFile.getParent() + "/") + "IR" + imageFile.getName();
         Imgcodecs.imwrite(irName, intermediate);
         CognitiveApi.INSTANCE.check(irName);
         return getPreprocessedName(irName);
@@ -256,9 +256,9 @@ public class OpenCVTest {
             wordHeight += word.getCoordinates().getWidth() / word.getText().length();
         }
         wordHeight = wordHeight / words.size();
-        if (wordHeight < 20) {
+        if (wordHeight < 30) {
             //resize here
-            double scaleFactor = 20 / wordHeight;
+            double scaleFactor = 30 / wordHeight;
             Imgproc.resize(source, source, new Size(source.width() * scaleFactor, source.height() * scaleFactor));
         }
         Imgcodecs.imwrite(getPreprocessedName(input), source);

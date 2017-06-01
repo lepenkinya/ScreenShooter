@@ -10,11 +10,9 @@ class TessIntegration {
         val instance = TessIntegration()
     }
 
-    val doConvert: Boolean = true
-    val convertResize: Int = 400
 
-    fun recognize(path: String, testPass: String, convertPath: String): String {
-        return runCommandLine(convertIfRequired(path, convertPath), testPass)
+    fun recognize(path: String, testPass: String): String {
+        return runCommandLine(path, testPass)
     }
 
     private fun runCommandLine(path: String, tessPath: String): String {
@@ -22,8 +20,30 @@ class TessIntegration {
         val directory = file.parent
         val resultFileName = directory + System.lineSeparator() + file.nameWithoutExtension
 
+        val configFile = File("./tessconfig")
+        if (configFile.exists()) configFile.delete()
+        configFile.createNewFile()
+
+        val user_words = File("./user_words")
+        if (user_words.exists()) user_words.delete()
+        user_words.createNewFile()
+
+        with(user_words) {
+            appendText("clientName")
+        }
+
+        with(configFile) {
+            appendText("load_system_dawg 0\n")
+            appendText("load_freq_dawg 0")
+        }
+
         val result = ProcessExecutor()
-                .command(tessPath, "-l", "eng", file.absolutePath, resultFileName)
+                .command(
+                        tessPath,
+                        "-l", "eng",
+                        //"--user-words", user_words.absolutePath,
+                        file.absolutePath, resultFileName //, configFile.absolutePath
+                )
                 .redirectOutput(System.out)
                 .redirectError(System.out)
                 .readOutput(true)
@@ -32,31 +52,6 @@ class TessIntegration {
         println("Tess exit code: ${result.exitValue}")
 
         return File(resultFileName + ".txt").readText()
-    }
-
-    fun convertIfRequired(path: String, convertPath: String): String {
-        if (!doConvert) return path
-
-
-        val file = File(path)
-        val directory = file.parent
-        val resultFileName = directory + System.lineSeparator() + file.nameWithoutExtension + "_tf.tiff"
-
-
-        ProcessExecutor().command(
-                convertPath,
-                path,
-                "-resize",
-                convertResize.toString() + "%",
-                "-type",
-                "Grayscale",
-                resultFileName
-        ).redirectError(System.out)
-                .redirectOutput(System.out)
-                .execute()
-
-
-        return if (File(resultFileName).exists()) resultFileName else path
     }
 
 }

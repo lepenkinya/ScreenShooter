@@ -7,11 +7,9 @@ import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.ProgressIndicatorProvider
 import com.intellij.openapi.util.io.FileUtil
-import com.intellij.util.JBHiDPIScaledImage
 import org.apache.http.client.fluent.Request
 import org.apache.http.util.EntityUtils
 import shooter.service.ImageParsingService
-import sun.plugin.util.UIUtil
 import java.awt.image.BufferedImage
 import java.io.File
 import java.util.concurrent.atomic.AtomicLong
@@ -35,8 +33,7 @@ class Integration {
         val ioFile = saveImageAsIOFile(image) ?: return ""
         if (ApplicationManager.getApplication().isUnitTestMode) {
             val tessPath = PathEnvironmentVariableUtil.findInPath("tesseract")!!.absolutePath
-            val convertPath = PathEnvironmentVariableUtil.findInPath("convert")!!.absolutePath
-            return recognize(ioFile.absolutePath, tessPath, convertPath).text
+            return recognize(ioFile.absolutePath, tessPath).text
         }
 
         logMessage(progressIndicator, "Send request...")
