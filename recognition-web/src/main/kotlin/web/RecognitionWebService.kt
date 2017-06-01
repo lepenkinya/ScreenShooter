@@ -54,13 +54,13 @@ class RecognitionWebService(val tessPath: String) {
         val filename = dirName.absolutePath + "/$fileName"
         File(filename).writeBytes(body)
 
-        val result: RecognitionResult
         try {
-            result = recognize(filename, tessPath)
+            return recognize(filename, tessPath)
+        } catch (e: Exception) {
+            return RecognitionResult(Status.FAILED, e.toString())
         } finally {
             dirName.deleteRecursively()
         }
-        return result
     }
 
 }
