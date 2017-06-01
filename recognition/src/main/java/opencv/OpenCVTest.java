@@ -268,16 +268,16 @@ public class OpenCVTest {
     public static void filterTextRectangles(String input, List<Coordinates> wordCoords, List<Word> words, int samplePointsCount, double epsilon, double threshold) {
         Mat source = Imgcodecs.imread(input,  Imgcodecs.CV_LOAD_IMAGE_COLOR);
         filterTextRectangles(source, wordCoords, samplePointsCount, epsilon, threshold);
-        double wordHeight = 0;
-        for (Word word : words) {
-            wordHeight += word.getCoordinates().getWidth() / word.getText().length();
-        }
-        wordHeight = wordHeight / words.size();
-        if (wordHeight < 30) {
-            //resize here
-            double scaleFactor = 30 / wordHeight;
-            Imgproc.resize(source, source, new Size(source.width() * scaleFactor, source.height() * scaleFactor));
-        }
+//        double wordHeight = 0;
+//        for (Word word : words) {
+//            wordHeight += word.getCoordinates().getWidth() / word.getText().length();
+//        }
+//        wordHeight = wordHeight / words.size();
+//        if (wordHeight < 30) {
+//            //resize here
+//            double scaleFactor = 30 / wordHeight;
+//            Imgproc.resize(source, source, new Size(source.width() * scaleFactor, source.height() * scaleFactor));
+//        }
         Imgcodecs.imwrite(getPreprocessedName(input), source);
     }
 
