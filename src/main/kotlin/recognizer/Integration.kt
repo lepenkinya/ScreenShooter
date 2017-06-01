@@ -36,7 +36,9 @@ class Integration {
         }
 
         logMessage(progressIndicator, "Send request...")
-        //TODO insert 0.0.0.0 on local debug
+
+        //TODO SERVER URL insert 0.0.0.0 on local debug
+
         val request = Request.Post("http://95.213.236.215:4567/ocr")
                 .addHeader(HttpHeaders.CONTENT_TYPE, "image/png")
                 .bodyByteArray(ioFile.readBytes())
