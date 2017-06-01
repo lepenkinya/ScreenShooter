@@ -13,6 +13,7 @@ import com.intellij.openapi.fileTypes.LanguageFileType
 import com.intellij.openapi.fileTypes.PlainTextFileType
 import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.util.text.StringUtil
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.*
 import com.intellij.psi.codeStyle.CodeStyleManager
@@ -149,19 +150,20 @@ class ImageParsingService(val project: Project) {
     fun filterFragmentsByFileType(indentedTextFragments: Array<String>, fileType: LanguageFileType): TextsWithErrorFlag {
         var hasErrors = false
 
-
         val result = indentedTextFragments.map {
-            var errors = getErrors(fileType, it)
-
-            if (errors.size() <= 0) {
-                return@map it
-            }
 
             val lines = it.split("\n")
 
-            val newLines = removeLineNumbers(removePrefixNumbers(lines))
+            val withoutPrefixes = removePrefixNumbers(lines)
+            var joinedText = withoutPrefixes.joinToString("\n")
+            var errors = getErrors(fileType, joinedText)
+            if (errors.size() <= 0) {
+                return@map joinedText
+            }
 
-            val joinedText = newLines.joinToString("\n")
+            val newLines = removeLineNumbers(withoutPrefixes)
+
+            joinedText = newLines.joinToString("\n")
 
             errors = getErrors(fileType, joinedText)
             if (errors.size() <= 0) {
@@ -188,7 +190,7 @@ class ImageParsingService(val project: Project) {
 
         @Suppress("LoopToCallChain")
         for (line in lines) {
-            if (line.isEmpty()) continue
+            if (StringUtil.isEmptyOrSpaces(line)) continue
 
             try {
                 Integer.parseInt(line)
