@@ -17,9 +17,8 @@ fun main(args: Array<String>) {
     val http = ignite()
 
     val tessPath = "tesseract"
-    val convertPath = "convert"
 
-    val recognitionService = RecognitionWebService(tessPath, convertPath)
+    val recognitionService = RecognitionWebService(tessPath)
 
     http.get("/hello") { _, _ -> "Hello World v.2" }
     http.post("/ocr", { request: Request, response: Response ->
@@ -37,8 +36,7 @@ fun main(args: Array<String>) {
 }
 
 
-class RecognitionWebService(val tessPath: String,
-                            val convertPath: String) {
+class RecognitionWebService(val tessPath: String) {
     private val counter = AtomicInteger()
 
     private fun uniqueDirName(): File {
