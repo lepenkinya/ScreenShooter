@@ -4,14 +4,14 @@ import nu.pattern.OpenCV;
 import org.opencv.core.*;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
+import org.opencv.imgproc.Moments;
 import recognizer.CognitiveApi;
 import recognizer.Coordinates;
+import recognizer.Line;
+import recognizer.Word;
 
-import java.io.File;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
+import java.io.*;
+import java.util.*;
 
 public class OpenCVTest {
 
@@ -54,18 +54,19 @@ public class OpenCVTest {
 
         int filterOffset = 1;
         long replaceCount = 0;
+        double[] background = maxColor.toPoint();
         for (int x = filterOffset; x < source.width() - filterOffset; ++x) {
             for (int y = filterOffset; y < source.height() - filterOffset; ++y) {
                 double[] center = source.get(y, x);
                 if (isSizeOneTemplate(source, x, y, epsilon)) {//centerCount <= 5) {
                     //replace current pixel
                     replaceCount++;
-                    double[] placeholder = maxColor.toPoint();
-                    destination.put(y, x, placeholder);
-                    //System.arraycopy(average, 0, dst, 0, dst.length);
+                    destination.put(y, x, background);
+//                } else if (isDeprecatedLine(source, x, y, epsilon, background)) {
+//                    double[] upper = source.get(y - 1, x);
+//                    destination.put(y, x, upper);
                 } else {
                     destination.put(y, x, center);
-                    //System.arraycopy(center, 0, dst, 0, dst.length);
                 }
             }
         }
@@ -141,6 +142,17 @@ public class OpenCVTest {
                 isDiffOk(center, source.get(y + 1, x + 1), epsilon));
     }
 
+    public static boolean isDeprecatedLine(Mat source, int x, int y, double epsilon, double[] background) {
+        double[] center = source.get(y, x);
+        double[] lower = source.get(y + 1, x);
+        double[] upper = source.get(y - 1, x);
+        return getCenterCount(source, x, y, 1, epsilon) == 3 &&
+                isDiffOk(lower, upper, epsilon) &&
+                !isDiffOk(lower, background, epsilon) &&
+                !isDiffOk(upper, background, epsilon) &&
+                !isDiffOk(center, background, epsilon);
+    }
+
     public static void simplifyColors(Mat source, Mat destination, int bitCount) {
         for (int x = 0; x < source.width(); ++x) {
             for (int y = 0; y < source.height(); ++y) {
@@ -192,11 +204,45 @@ public class OpenCVTest {
     }
 
     public static void main(String[] args) {
+//        File dir = new File(args[0]);
+//        assert(dir.isDirectory());
+//        for (File file: dir.listFiles()) {
+//            Mat source = Imgcodecs.imread(file.getAbsolutePath(),  Imgcodecs.CV_LOAD_IMAGE_COLOR);
+//            findRectangles(source, 20, 5, 0.1);
+//            Imgcodecs.imwrite(dir.getAbsolutePath() + "/detected" + file.getName(), source);
+//        }
         String image = args[0];
         preprocess(image);
-//        Mat res = filterPreprocessing(image);
-//
-//        Imgcodecs.imwrite("grayblur"+image, res);
+        Mat res = filterPreprocessing(image);
+
+        Imgcodecs.imwrite("grayblur"+image, res);
+    }
+
+    public static void dumpIndents(List<Line> allLines, List<Word> words, String inputName) {
+        List<Integer> indents = new LinkedList<>();
+        double indentSize = 0;
+        for (Word word: words) {
+            indentSize += word.getCoordinates().getWidth() / word.getText().length();
+        }
+        indentSize = indentSize / words.size();
+        for (Line line : allLines) {
+            indents.add(new Double(line.getCoordinates().getX_left() / indentSize).intValue());
+        }
+        int minIndent = Collections.min(indents);
+        File inputFile = new File(inputName);
+        String nameNoExt = inputName.substring(0, inputName.lastIndexOf("."));
+        File resFile = new File((inputFile.getParent() == null ? "" : inputFile.getParent() + "/") + "INDENT_" + nameNoExt + ".txt");
+        try {
+            FileOutputStream fos = new FileOutputStream(resFile);
+            PrintStream ps = new PrintStream(fos);
+            for (Integer indent : indents) {
+                ps.println(indent - minIndent);
+            }
+            ps.flush();
+            fos.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     public static Random myRandom = new Random(System.currentTimeMillis());
@@ -208,7 +254,7 @@ public class OpenCVTest {
     }
 
     public static void addRectangles(String input, List<Coordinates> words, List<Coordinates> lines) {
-        Mat source = Imgcodecs.imread(input,  Imgcodecs.CV_LOAD_IMAGE_COLOR);
+        Mat source = Imgcodecs.imread(input,  Imgcodecs.CV_LOAD_IMAGE_GRAYSCALE);
         Mat dst = source;
         for (Coordinates coords : words) {
             Point leftUpper = new Point(coords.getX_left(), coords.getY_up());
@@ -216,5 +262,101 @@ public class OpenCVTest {
             Imgproc.rectangle(dst, leftUpper, rightLower, new Scalar(255, 0, 0));
         }
         Imgcodecs.imwrite("rectangles_"+input, dst);
+    }
+
+    public static void onFailedPreprocessing(String input) {
+        Mat source = Imgcodecs.imread(input, Imgcodecs.CV_LOAD_IMAGE_GRAYSCALE);
+        Imgcodecs.imwrite(getPreprocessedName(input), source);
+    }
+
+    public static double segmentLength(Point a, Point b) {
+        double x = a.x - b.x;
+        double y = a.y - b.y;
+        return Math.sqrt(x * x + y * y);
+    }
+
+    public static void findRectangles(Mat source, double threshold, double areaEpsilon, double hullAreaEpsilon) {
+        Mat grayScale = new Mat(source.height(), source.width(), Imgcodecs.CV_LOAD_IMAGE_GRAYSCALE);
+        Imgproc.cvtColor(source, grayScale, Imgproc.COLOR_BGR2GRAY);
+//        Imgproc.blur(grayScale, grayScale, new Size(3, 3));
+        Imgcodecs.imwrite("graydetect.png", grayScale);
+        Mat result = new Mat(source.height(), source.width(), Imgcodecs.CV_LOAD_IMAGE_GRAYSCALE);
+        Imgproc.Canny(grayScale, result, threshold, threshold * 2);
+        Imgcodecs.imwrite("cannyResult.png", result);
+        List<MatOfPoint> contours = new ArrayList<>();
+        Mat hierarchy = new Mat();
+        Imgproc.findContours(result, contours, hierarchy, Imgproc.RETR_LIST , Imgproc.CHAIN_APPROX_SIMPLE, new Point(0,0));
+        double imageArea = source.height() * source.width();
+        int maxContour = 0;
+        double maxArea = 0;
+        for (int i = 0; i < contours.size(); ++i) {
+            MatOfPoint contour = contours.get(i);
+            Rect rect = Imgproc.boundingRect(contour);
+            Moments moments = Imgproc.moments(contour);
+            double area = moments.get_m00();
+//            double perimeter = Imgproc.arcLength(new MatOfPoint2f(contour), true);
+//            if (area / imageArea > areaEpsilon) {
+//            if (Math.abs((area - rect.area()) / area) < areaEpsilon) {// && Math.abs((perimeter - rect.height * 2 - rect.width * 2) / perimeter) < perimeterEpsilon) {
+//                Imgproc.drawContours(source, contours, i, new Scalar(0, 0, 255));
+//                Imgproc.rectangle(source, rect.tl(), rect.br(), new Scalar(255, 0, 0));
+//            }
+            Point[] contourPoints = contour.toArray();
+            if (contourPoints.length < 300 && imageArea / rect.area() < areaEpsilon) {
+                if (rect.area() > maxArea) {
+                    maxContour = i;
+                    maxArea = rect.area();
+                }
+//                Mat other = new Mat(source.height(), source.width(), Imgcodecs.CV_LOAD_IMAGE_COLOR);
+//                MatOfInt hull = new MatOfInt();
+//                Imgproc.convexHull(contour, hull);
+//                int[] hullArray = hull.toArray();
+//                Point[] convexPoints = new Point[hullArray.length];
+//                for (int j = 0; j < convexPoints.length; ++j) {
+//                    convexPoints[j] = contourPoints[hullArray[j]];
+//                }
+//                MatOfPoint convexMat = new MatOfPoint(convexPoints);
+//                if (convexPoints.length == 3) {
+//                    //triangular convex hull
+//                    Set<Double> sides = Sets.newTreeSet();
+//                    sides.add(segmentLength(convexPoints[0], convexPoints[1]));
+//                    sides.add(segmentLength(convexPoints[0], convexPoints[2]));
+//                    sides.add(segmentLength(convexPoints[1], convexPoints[2]));
+//                    double max = Collections.max(sides);
+//                    sides.remove(max);
+//                    double res = 0;
+//                    for (Double d : sides) {
+//                        res += d * d;
+//                    }
+//                    if (Math.abs(res - max * max) < epsilon) {
+//                        //TODO this is a good convex hull
+//                        System.out.println(i + " is a good rectangle");
+//                        if (rect.area() > maxArea) {
+//                            maxContour = i;
+//                            maxArea = rect.area();
+//                        }
+//
+//                    }
+//                } else if (convexPoints.length == 4 && Math.abs(area - rect.area()) / rect.area() < hullAreaEpsilon) {
+//                    //TODO this is a good convex shell
+//                    System.out.println(i + " is a good rectangle");
+//                    if (rect.area() > maxArea) {
+//                        maxContour = i;
+//                        maxArea = rect.area();
+//                    }
+//                }
+//                Moments hullMoments = Imgproc.moments(convexMat);
+//                double hullArea = hullMoments.get_m00();
+//                source.copyTo(other);
+//                Imgproc.rectangle(other, rect.tl(), rect.br(), new Scalar(255, 0, 0));
+//                Imgproc.drawContours(other, contours, i, new Scalar(0, 0, 255));
+//                Imgproc.drawContours(other, Lists.newArrayList(convexMat), 0, new Scalar(0, 255, 0));
+//
+//                Imgcodecs.imwrite(i + "contour.png", other);
+//                System.out.println("Area for " + i + " = " + area + " rectangle area = " + rect.area() + " hull area = " + hullArea);
+            }
+        }
+        Imgproc.drawContours(source, contours, maxContour, new Scalar(0, 0, 255));
+        Rect rect = Imgproc.boundingRect(contours.get(maxContour));
+        Imgproc.rectangle(source, rect.tl(), rect.br(), new Scalar(255, 0, 0));
     }
 }

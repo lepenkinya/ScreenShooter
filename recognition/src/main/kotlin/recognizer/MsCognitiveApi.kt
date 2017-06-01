@@ -16,11 +16,19 @@ class CognitiveResponse {
     var language: String = ""
     var regions: List<Region> = emptyList()
 
-    fun allLines(): List<Coordinates> {
+    fun allLinesCoords(): List<Coordinates> {
         return regions.flatMap { it.lines }.map { it.coordinates }
     }
 
-    fun words(): List<Coordinates> {
+    fun allLines(): List<Line> {
+        return regions.flatMap { it.lines }
+    }
+
+    fun allWords(): List<Word> {
+        return regions.flatMap { it.lines }.flatMap{ it.words }
+    }
+
+    fun wordsCoords(): List<Coordinates> {
         return regions.flatMap { it.lines }.flatMap { it.words }.map { it.coordinates }
     }
 }
@@ -92,10 +100,9 @@ object CognitiveApi {
 
                 val region = gson.fromJson(text, CognitiveResponse::class.java)
 
-                val allWords = region.words()
-                val allLines = region.allLines()
+                val allWords = region.wordsCoords()
+                val allLines = region.allLinesCoords()
 
-                OpenCVTest.addRectangles(inputName, allWords, allLines)
                 OpenCVTest.filterTextRectangles(inputName, allWords, 20, OpenCVTest.epsilon, 0.5);
 
                 region.regions.forEach {
@@ -109,6 +116,7 @@ object CognitiveApi {
 
         } catch (e: Exception) {
             println(e.message)
+            OpenCVTest.onFailedPreprocessing(inputName)
         }
 
     }
