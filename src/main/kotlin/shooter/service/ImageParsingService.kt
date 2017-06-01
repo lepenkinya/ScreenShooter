@@ -98,7 +98,9 @@ class ImageParsingService(val project: Project) {
 
     fun detectTypeAndProcessText(indentedTextFragments: Array<String>, fileType: FileType?): ImageInfo? {
         val languageFileType: LanguageFileType = fileType as? LanguageFileType ?: PlainTextFileType.INSTANCE
-        var filteredFragments = filterFragmentsByFileType(indentedTextFragments, languageFileType)
+        val textsWithErrors = filterFragmentsByFileType(indentedTextFragments, languageFileType)
+
+        var filteredFragments = textsWithErrors.texts
 
         if (filteredFragments.isEmpty()) {
             //nothing to do
@@ -107,10 +109,16 @@ class ImageParsingService(val project: Project) {
 
 
         val text = filteredFragments.joinToString("\n")
-        return ImageInfo(text, languageFileType)
+        return ImageInfo(text, languageFileType, !textsWithErrors.hasErrors)
     }
 
-    fun filterFragmentsByFileType(indentedTextFragments: Array<String>, fileType: LanguageFileType): List<String> {
+
+    data class TextsWithErrorFlag(val texts: List<String>, val hasErrors: Boolean)
+
+    fun filterFragmentsByFileType(indentedTextFragments: Array<String>, fileType: LanguageFileType): TextsWithErrorFlag {
+        var hasErrors = false
+
+
         val result = indentedTextFragments.map {
             var errors = getErrors(fileType, it)
 
@@ -129,11 +137,13 @@ class ImageParsingService(val project: Project) {
                 return@map joinedText
             }
 
+            hasErrors = true
+
             return@map joinedText
 
         }.filterNotNull()
 
-        return result
+        return TextsWithErrorFlag(result, hasErrors)
     }
 
     private fun getErrors(fileType: LanguageFileType, it: String): JBIterable<PsiErrorElement> {
