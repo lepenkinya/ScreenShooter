@@ -10,10 +10,10 @@ fun recognize(filePath: String, tessPath: String, debugDir: File?): RecognitionR
     val newImagePath = OpenCVTest.preprocess(file.absolutePath)
 
     if (debugDir != null) {
-        FileUtils.copyFile(File(newImagePath), File(debugDir, "after_preprocess.png"))
+        FileUtils.copyFile(File(newImagePath.fileName), File(debugDir, "after_preprocess.png"))
     }
 
-    val newFile = File(newImagePath)
+    val newFile = File(newImagePath.fileName)
 
     val path = if (newFile.exists()) newFile.absolutePath else file.absolutePath
 

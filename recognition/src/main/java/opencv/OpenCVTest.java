@@ -75,13 +75,13 @@ public class OpenCVTest {
         return destination;
     }
 
-    public static String preprocess(String imageName) {
+    public static PreprocessResult preprocess(String imageName) {
         Mat intermediate = filterPreprocessing(imageName);
         File imageFile = new File(imageName);
         String irName = (imageFile.getParent() == null ? "" : imageFile.getParent() + "/") + "IR" + imageFile.getName();
         Imgcodecs.imwrite(irName, intermediate);
         CognitiveApi.INSTANCE.check(irName);
-        return getPreprocessedName(irName);
+        return new PreprocessResult(getPreprocessedName(irName), getMaxColor(intermediate).isDark());
     }
 
     public static String getPreprocessedName(String basePath) {
@@ -118,6 +118,9 @@ public class OpenCVTest {
         }
         double[] toPoint() {
             return new double[]{red, blue, green};
+        }
+        boolean isDark() {
+            return red + blue + green < 300;
         }
     }
 
