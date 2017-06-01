@@ -2,6 +2,7 @@ package shooter.service
 
 import com.intellij.ide.scratch.ScratchFileService
 import com.intellij.ide.scratch.ScratchRootType
+import com.intellij.lang.Language
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.ReadAction
 import com.intellij.openapi.components.ServiceManager
@@ -10,9 +11,11 @@ import com.intellij.openapi.fileTypes.FileType
 import com.intellij.openapi.fileTypes.LanguageFileType
 import com.intellij.openapi.fileTypes.PlainTextFileType
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiErrorElement
 import com.intellij.psi.PsiFileFactory
 import com.intellij.psi.SyntaxTraverser
+import com.intellij.psi.codeStyle.CodeStyleManager
 import com.intellij.util.PathUtil
 import com.intellij.util.containers.JBIterable
 import recognition.Integration
@@ -21,7 +24,7 @@ import java.awt.Image
 
 class ImageParsingService(val project: Project) {
 
-    data class ImageInfo(val text: String, val fileType: LanguageFileType)
+    data class ImageInfo(val text: String, val fileType: LanguageFileType, val canFormat: Boolean = false)
 
 
     companion object ServiceHolder {
@@ -41,7 +44,9 @@ class ImageParsingService(val project: Project) {
     private fun processImageImpl(image: Image, fileType: FileType?) {
 
 
-        val info = getParsedImageInfo(image, fileType) ?: return
+        var info: ImageInfo = getParsedImageInfo(image, fileType) ?: return
+
+        info = getFormattedInfo(info)
 
         val language = info.fileType.language
 
@@ -51,13 +56,30 @@ class ImageParsingService(val project: Project) {
         val ext = fileType?.defaultExtension
 
         ApplicationManager.getApplication().invokeLater({
-            val scratchFile = ScratchRootType.getInstance().createScratchFile(project,
-                    PathUtil.makeFileName(fileName, ext), language, text, option)
+            val scratchFile = createScratchFile(fileName, ext, language, text, option)
 
             if (scratchFile != null) {
                 FileEditorManager.getInstance(project).openFile(scratchFile, true)
             }
         })
+    }
+
+    fun getFormattedInfo(info: ImageInfo): ImageInfo {
+        if (!info.canFormat) return info
+
+        return ReadAction.compute<ImageInfo, RuntimeException> {
+            val psiFile = PsiFileFactory.getInstance(project).createFileFromText("name" + info.fileType.defaultExtension,
+                    info.fileType, info.text)
+            val result = CodeStyleManager.getInstance(project).reformat(psiFile)
+
+            ImageInfo(result.text, info.fileType, true)
+        }
+    }
+
+    private fun createScratchFile(fileName: String, ext: String?, language: Language, text: String, option: ScratchFileService.Option): VirtualFile? {
+        val scratchFile = ScratchRootType.getInstance().createScratchFile(project,
+                PathUtil.makeFileName(fileName, ext), language, text, option)
+        return scratchFile
     }
 
 
