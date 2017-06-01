@@ -5,33 +5,21 @@ import com.intellij.ide.scratch.ScratchRootType
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.ReadAction
 import com.intellij.openapi.components.ServiceManager
-import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.fileTypes.FileType
 import com.intellij.openapi.fileTypes.LanguageFileType
 import com.intellij.openapi.fileTypes.PlainTextFileType
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.util.io.FileUtil
 import com.intellij.psi.PsiErrorElement
 import com.intellij.psi.PsiFileFactory
 import com.intellij.psi.SyntaxTraverser
 import com.intellij.util.PathUtil
 import com.intellij.util.containers.JBIterable
-import com.intellij.util.ui.UIUtil
-import opencv.OpenCVTest
-import recognition.ConverterIntegration
-import recognition.TessIntegration
+import recognition.Integration
 import java.awt.Image
-import java.awt.image.BufferedImage
-import java.io.File
-import java.util.concurrent.atomic.AtomicLong
-import javax.imageio.ImageIO
 
 
 class ImageParsingService(val project: Project) {
-
-    val logger = Logger.getInstance("#shooter.service.ImageParsingService")
-    val nextNumber = AtomicLong()
 
     data class ImageInfo(val text: String, val fileType: LanguageFileType)
 
@@ -72,41 +60,10 @@ class ImageParsingService(val project: Project) {
         })
     }
 
-    fun saveImageAsIOFile(image: Image): File? {
-        try {
-            val bufferedImage = UIUtil.createImage(image.getWidth(null), image.getHeight(null), BufferedImage.TYPE_INT_RGB)
-
-            val bImageGraphics = bufferedImage.createGraphics()
-            bImageGraphics.drawImage(image, null, null)
-            val outFile = FileUtil.createTempFile("saved_" + nextNumber.incrementAndGet(), ".png", true)
-
-            ImageIO.write(bufferedImage, "png", outFile)
-
-            return outFile
-        } catch (e: Exception) {
-            logMessages("Error while writing file " + e.localizedMessage)
-        }
-
-        return null
-    }
-
-    private fun logMessages(text: String) {
-        println(text)
-        logger.info(text)
-    }
-
 
     private fun getIndentedTextFragments(image: Image): Array<String>? {
-        val ioFile = saveImageAsIOFile(image) ?: return null
-        logMessages("Created file for image ${ioFile.absolutePath}")
-        var afterPreprocessed = OpenCVTest.preprocess(ioFile.absolutePath)
-        if (!File(afterPreprocessed).exists()) {
-            afterPreprocessed = ioFile.absolutePath
-        }
-        val readyForParsing = ConverterIntegration.instance.convertIfRequired(afterPreprocessed)
-        val recognizeText = TessIntegration.instance.recognize(readyForParsing)
-
-        return arrayOf(recognizeText)
+        val resultText = Integration.instance.runForImage(image)
+        return arrayOf(resultText)
     }
 
 
