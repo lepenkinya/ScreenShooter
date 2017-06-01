@@ -20,7 +20,7 @@ fun main(args: Array<String>) {
 
     val recognitionService = RecognitionWebService(tessPath)
 
-    http.get("/hello") { _, _ -> "Hello World v.2" }
+    http.get("/hello") { _, _ -> "Hello World v.4" }
     http.post("/ocr", { request: Request, response: Response ->
         val type = request.headers("Content-Type")
         println("Type: $type")
