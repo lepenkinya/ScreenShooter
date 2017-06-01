@@ -46,7 +46,9 @@ allprojects {
         compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
         compile "org.jetbrains.kotlin:kotlin-runtime:$kotlinVersion"
         compile "org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion"
-        compile 'com.google.code.gson:gson:2.8.0'
+        compile "com.sparkjava:spark-core:2.5.4"
+        compile "org.slf4j:slf4j-simple:1.7.21"
+        compile "com.google.code.gson:gson:2.8.0"
         compile name: 'opencv-320'
         compile 'net.sourceforge.tess4j:tess4j:3.3.1'
         //compile 'com.asprise.ocr:java-ocr-api:15.3.0.3'
