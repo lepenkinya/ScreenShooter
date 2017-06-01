@@ -71,7 +71,7 @@ public class OpenCVTest {
                 }
             }
         }
-        Imgproc.cvtColor(destination, destination, Imgproc.COLOR_RGB2GRAY);
+//        Imgproc.cvtColor(destination, destination, Imgproc.COLOR_RGB2GRAY);
         return destination;
     }
 
@@ -154,7 +154,13 @@ public class OpenCVTest {
                 isDiffOk(center, source.get(y + 1, x + 2), epsilon) ||
                 isDiffOk(center, source.get(y - 1, x - 2), epsilon) &&
                 isDiffOk(center, source.get(y, x - 1), epsilon) &&
-                isDiffOk(center, source.get(y - 1, x + 1), epsilon));
+                isDiffOk(center, source.get(y - 1, x + 1), epsilon) ||
+                isDiffOk(center, source.get(y + 1, x - 2), epsilon) &&
+                isDiffOk(center, source.get(y, x - 1), epsilon) &&
+                isDiffOk(center, source.get(y + 1, x + 1), epsilon) ||
+                isDiffOk(center, source.get(y - 1, x - 1), epsilon) &&
+                isDiffOk(center, source.get(y, x + 1), epsilon) &&
+                isDiffOk(center, source.get(y - 1, x + 2), epsilon));
     }
 
     public static boolean isDeprecatedLine(Mat source, int x, int y, double epsilon, double[] background) {
