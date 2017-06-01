@@ -85,7 +85,8 @@ public class OpenCVTest {
 
     public static String getPreprocessedName(String basePath) {
         File imageFile = new File(basePath);
-        return (imageFile.getParent() == null ? "" : imageFile.getParent() + "/") + "DONE_" + imageFile.getName().substring(2);
+        String noExt = imageFile.getName().substring(0, imageFile.getName().lastIndexOf(".")).substring(2);
+        return (imageFile.getParent() == null ? "" : imageFile.getParent() + "/") + "DONE_" + noExt + ".tiff";
     }
 
     static class PixelColor {
@@ -247,9 +248,19 @@ public class OpenCVTest {
 
     public static Random myRandom = new Random(System.currentTimeMillis());
 
-    public static void filterTextRectangles(String input, List<Coordinates> words, int samplePointsCount, double epsilon, double threshold) {
+    public static void filterTextRectangles(String input, List<Coordinates> wordCoords, List<Word> words, int samplePointsCount, double epsilon, double threshold) {
         Mat source = Imgcodecs.imread(input,  Imgcodecs.CV_LOAD_IMAGE_COLOR);
-        filterTextRectangles(source, words, samplePointsCount, epsilon, threshold);
+        filterTextRectangles(source, wordCoords, samplePointsCount, epsilon, threshold);
+        double wordHeight = 0;
+        for (Word word : words) {
+            wordHeight += word.getCoordinates().getWidth() / word.getText().length();
+        }
+        wordHeight = wordHeight / words.size();
+        if (wordHeight < 20) {
+            //resize here
+            double scaleFactor = 20 / wordHeight;
+            Imgproc.resize(source, source, new Size(source.width() * scaleFactor, source.height() * scaleFactor));
+        }
         Imgcodecs.imwrite(getPreprocessedName(input), source);
     }
 

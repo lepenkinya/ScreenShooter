@@ -103,7 +103,7 @@ object CognitiveApi {
                 val allWords = region.wordsCoords()
                 val allLines = region.allLinesCoords()
 
-                OpenCVTest.filterTextRectangles(inputName, allWords, 20, OpenCVTest.epsilon, 0.5);
+                OpenCVTest.filterTextRectangles(inputName, allWords, region.allWords(), 20, OpenCVTest.epsilon, 0.5);
 
                 region.regions.forEach {
                     println("REGION_START")
