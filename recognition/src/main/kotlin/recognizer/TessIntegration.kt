@@ -62,10 +62,12 @@ class TessIntegration {
                 path,
                 "-resize",
                 "300%",
-                "-density",
-                "300",
-                "-type",
-                "Grayscale",
+                "+dither",
+                "-colors",
+                "2",
+                "-normalize",
+                "-colorspace",
+                "gray",
                 resultFileName
         ).redirectError(System.out)
                 .redirectOutput(System.out)
