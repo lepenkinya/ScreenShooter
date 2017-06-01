@@ -5,6 +5,7 @@ import com.intellij.ide.scratch.ScratchRootType
 import com.intellij.lang.Language
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.ReadAction
+import com.intellij.openapi.application.WriteAction
 import com.intellij.openapi.components.ServiceManager
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.fileTypes.FileType
@@ -12,9 +13,7 @@ import com.intellij.openapi.fileTypes.LanguageFileType
 import com.intellij.openapi.fileTypes.PlainTextFileType
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
-import com.intellij.psi.PsiErrorElement
-import com.intellij.psi.PsiFileFactory
-import com.intellij.psi.SyntaxTraverser
+import com.intellij.psi.*
 import com.intellij.psi.codeStyle.CodeStyleManager
 import com.intellij.util.PathUtil
 import com.intellij.util.containers.JBIterable
@@ -34,32 +33,58 @@ class ImageParsingService(val project: Project) {
     }
 
 
-    fun processImage(image: Image, fileType: FileType?) {
+    fun processImage(image: Image, fileType: FileType?, fileToUse: VirtualFile?) {
         ApplicationManager.getApplication().executeOnPooledThread({
-            processImageImpl(image, fileType)
+            processImageImpl(image, fileType, fileToUse)
         })
     }
 
 
-    private fun processImageImpl(image: Image, fileType: FileType?) {
+    private fun processImageImpl(image: Image, fileType: FileType?, fileToUse: VirtualFile?) {
 
 
         val info: ImageInfo = getParsedAndFormattedImageInfo(image, fileType) ?: return
 
+
+        ApplicationManager.getApplication().invokeLater({
+            val resultFile = fillFile(info, fileType, fileToUse)
+
+            if (resultFile != null && resultFile == fileToUse) {
+                FileEditorManager.getInstance(project).openFile(resultFile, true)
+            }
+        })
+    }
+
+    private fun fillFile(info: ImageInfo,
+                         fileType: FileType?,
+                         fileToUse: VirtualFile?): VirtualFile? {
+        if (fileToUse != null && fileToUse.isValid) {
+            val psiFile = PsiManager.getInstance(project).findFile(fileToUse)
+            if (psiFile != null) {
+                val document = PsiDocumentManager.getInstance(project).getDocument(psiFile)
+                if (document != null) {
+                    WriteAction.run<Throwable> {
+                        PsiDocumentManager.getInstance(project).commitDocument(document)
+                        document.setText(info.text)
+
+                        PsiDocumentManager.getInstance(project).commitDocument(document)
+                    }
+                    return fileToUse
+                }
+
+            }
+        }
+        return createScratchFileForInfo(info, fileType)
+    }
+
+    private fun createScratchFileForInfo(info: ImageInfo, fileType: FileType?): VirtualFile? {
         val language = info.fileType.language
 
         val option = ScratchFileService.Option.create_new_always
         val fileName = "image"
         val text = info.text
         val ext = fileType?.defaultExtension
-
-        ApplicationManager.getApplication().invokeLater({
-            val scratchFile = createScratchFile(fileName, ext, language, text, option)
-
-            if (scratchFile != null) {
-                FileEditorManager.getInstance(project).openFile(scratchFile, true)
-            }
-        })
+        return createScratchFile(fileName, ext, language, text, option)
     }
 
     fun getFormattedInfo(info: ImageInfo): ImageInfo {
