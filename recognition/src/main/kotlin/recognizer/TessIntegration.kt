@@ -26,18 +26,8 @@ class TessIntegration {
 //        if (configFile.exists()) configFile.delete()
 //        configFile.createNewFile()
 //
-        val user_words = File("./ww")
-        if (user_words.exists()) user_words.delete()
-        user_words.createNewFile()
-
-        with(user_words) {
-            appendText("clientName\n")
-            appendText("generateUrl\n")
-            appendText("HashMap\n")
-            appendText("new\n")
-            appendText("data\n")
-            appendText("=")
-        }
+        val user_words = File("./dict")
+        println("File dict exists: ${user_words.exists()}")
 
 //        with(configFile) {
 //            appendText("load_system_dawg 0\n")

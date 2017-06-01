@@ -4,33 +4,16 @@ import java.io.File
 
 
 fun main(args: Array<String>) {
-    val root = File("/Users/yarik/IdeaProjects/IDEA_COMMUNITY")
+    val root = File("/Users/yarik/IdeaProjects/ScreenShooter/dictionary")
 
-    val files: FileTreeWalk = root.walkTopDown().onEnter {
-        val fileName = it.name
-        val isTestDir = fileName == "testSrc" || fileName == "testData" || fileName == "test"
-        !isTestDir
-    }
+    val files: FileTreeWalk = root.walkTopDown()
 
     val set = mutableSetOf<String>()
-
-
-
     for (file in files) {
-        println(file)
-        if (file.name.endsWith(".kt") || file.name.endsWith(".java")) {
-            file.readText()
-                    .split(' ', '\n', '\t', '.')
-                    .asSequence()
-                    .map { it.trim() }
-                    .filter { it.isNotEmpty() }
-                    .forEach {
-                        set.add(it)
-                    }
-        }
+        set.addAll(file.readLines().map { it.trim() }.filter { it.isNotEmpty() })
     }
 
-    val resultFile = File("user_words")
+    val resultFile = File("dict")
     if (resultFile.exists()) {
         resultFile.delete()
     }
