@@ -1,6 +1,5 @@
 package shooter.service
 
-import com.intellij.execution.configurations.PathEnvironmentVariableUtil
 import com.intellij.ide.scratch.ScratchFileService
 import com.intellij.ide.scratch.ScratchRootType
 import com.intellij.lang.Language
@@ -19,9 +18,7 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.*
 import com.intellij.psi.codeStyle.CodeStyleManager
 import com.intellij.util.PathUtil
-import com.intellij.util.RetinaImage
 import com.intellij.util.containers.JBIterable
-import com.intellij.util.ui.UIUtil
 import recognizer.Integration
 import shooter.preview.CropSelectionDialog
 import java.awt.Image
@@ -45,8 +42,10 @@ class ImageParsingService(val project: Project) {
     fun processImage(imageResult: Image, fileType: FileType?, fileToUse: VirtualFile?) {
         val image = imageResult
 
+
         ApplicationManager.getApplication().invokeLater({
             val dialog = CropSelectionDialog(project, image)
+
             dialog.show()
             if (!dialog.isOK) {
                 return@invokeLater
