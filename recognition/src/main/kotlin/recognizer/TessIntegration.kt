@@ -23,7 +23,7 @@ class TessIntegration {
         val directory = file.parent
         val resultFileName = directory + File.separator + file.nameWithoutExtension
 
-        val configFile = File("./tessconfig")
+//        val configFile = File("./tessconfig")
 
         val user_words = File("./dict")
         println("File dict exists: ${user_words.exists()} size: ${user_words.length()}")
@@ -39,7 +39,7 @@ class TessIntegration {
                         tessPath,
                         "-l", "eng",
                         "--user-words", user_words.absolutePath,
-                        file.absolutePath, resultFileName, configFile.absolutePath
+                        file.absolutePath, resultFileName//, configFile.absolutePath
                 )
                 .redirectOutput(System.out)
                 .redirectError(System.out)

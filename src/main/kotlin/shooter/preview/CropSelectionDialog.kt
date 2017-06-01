@@ -55,6 +55,8 @@ class CropSelectionDialog(project: Project, startImage: Image) : DialogWrapper(p
 
     init {
         title = "Select code area"
+        setOKButtonText("Recognize text")
+
         val width = image.getWidth(null)
         val height = image.getHeight(null)
         if (width > WIDTH || height > HEIGHT) {
