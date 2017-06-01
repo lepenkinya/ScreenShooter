@@ -26,15 +26,18 @@ class TessIntegration {
 //        if (configFile.exists()) configFile.delete()
 //        configFile.createNewFile()
 //
-//        val user_words = File("./user_words")
-//        if (user_words.exists()) user_words.delete()
-//        user_words.createNewFile()
-//
-//        with(user_words) {
-//            appendText("clientName\n")
-//            appendText("generateUrl\n")
-//            appendText("languageCode")
-//        }
+        val user_words = File("./ww")
+        if (user_words.exists()) user_words.delete()
+        user_words.createNewFile()
+
+        with(user_words) {
+            appendText("clientName\n")
+            appendText("generateUrl\n")
+            appendText("HashMap\n")
+            appendText("new\n")
+            appendText("data\n")
+            appendText("=")
+        }
 
 //        with(configFile) {
 //            appendText("load_system_dawg 0\n")
@@ -45,7 +48,7 @@ class TessIntegration {
                 .command(
                         tessPath,
                         "-l", "eng",
-//                        "--user-words", user_words.absolutePath,
+                        "--user-words", user_words.absolutePath,
                         file.absolutePath, resultFileName //, configFile.absolutePath
                 )
                 .redirectOutput(System.out)
