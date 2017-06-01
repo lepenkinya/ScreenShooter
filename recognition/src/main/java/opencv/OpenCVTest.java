@@ -85,8 +85,9 @@ public class OpenCVTest {
 
     public static String getPreprocessedName(String basePath) {
         File imageFile = new File(basePath);
-        String noExt = imageFile.getName().substring(0, imageFile.getName().lastIndexOf(".")).substring(2);
-        return (imageFile.getParent() == null ? "" : imageFile.getParent() + "/") + "DONE_" + noExt + ".tiff";
+//        String noExt = imageFile.getName().substring(0, imageFile.getName().lastIndexOf(".")).substring(2);
+//        return (imageFile.getParent() == null ? "" : imageFile.getParent() + "/") + "DONE_" + noExt + ".tiff";
+        return (imageFile.getParent() == null ? "" : imageFile.getParent() + "/") + "DONE_" + imageFile.getName().substring(2);
     }
 
     static class PixelColor {
