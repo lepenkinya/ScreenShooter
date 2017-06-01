@@ -1,9 +1,12 @@
 package recognition
 
+import com.google.common.net.HttpHeaders
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.util.io.FileUtil
 import com.intellij.util.ui.UIUtil
 import opencv.OpenCVTest
+import org.apache.http.client.fluent.Request
+import org.apache.http.util.EntityUtils
 import java.awt.Image
 import java.awt.image.BufferedImage
 import java.io.File
@@ -23,13 +26,23 @@ class Integration {
 
     fun runForImage(image: Image): String {
         val ioFile = saveImageAsIOFile(image) ?: return ""
-        logMessages("Created file for image ${ioFile.absolutePath}")
-        var afterPreprocessed = OpenCVTest.preprocess(ioFile.absolutePath)
-        if (!File(afterPreprocessed).exists()) {
-            afterPreprocessed = ioFile.absolutePath
+
+        val request = Request.Post("http://localhost:4567/ocr")
+                .addHeader(HttpHeaders.CONTENT_TYPE, "image/png")
+                .bodyByteArray(ioFile.readBytes())
+
+        try {
+            val response = request.execute().returnResponse()
+            val text = EntityUtils.toString(response.entity)
+            if (response.statusLine.statusCode in 200..299) {
+                return text
+            }
+            logger.error(text)
+            return ""
+        } catch (e: Exception) {
+            logger.error(e)
+            return ""
         }
-        val readyForParsing = convertIfRequired(afterPreprocessed)
-        return TessIntegration.instance.recognize(readyForParsing)
     }
 
 
