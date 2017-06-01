@@ -58,7 +58,7 @@ public class OpenCVTest {
         for (int x = filterOffset; x < source.width() - filterOffset; ++x) {
             for (int y = filterOffset; y < source.height() - filterOffset; ++y) {
                 double[] center = source.get(y, x);
-                if (isSizeOneTemplate(source, x, y, epsilon)) {//centerCount <= 5) {
+                if (isSizeOneTemplate(source, x, y, epsilon) || isSizeTwoTemplate(source, x, y, epsilon)) {//centerCount <= 5) {
                     //replace current pixel
                     replaceCount++;
                     destination.put(y, x, background);
@@ -143,6 +143,18 @@ public class OpenCVTest {
                 isDiffOk(center, source.get(y + 1, x + 1), epsilon));
     }
 
+    public static boolean isSizeTwoTemplate(Mat source, int x, int y, double epsilon) {
+        double[] center = source.get(x, y);
+        if (x < 2 || y < 2 || x >= source.width() - 2 || y >= source.height() - 2) return false;
+        return getCenterCount(source, x, y, 1, 2, 1, 1, epsilon) <= 4 &&
+                (isDiffOk(center, source.get(y + 1, x - 1), epsilon) &&
+                isDiffOk(center, source.get(y, x + 1), epsilon) &&
+                isDiffOk(center, source.get(y + 1, x + 2), epsilon) ||
+                isDiffOk(center, source.get(y - 1, x - 2), epsilon) &&
+                isDiffOk(center, source.get(y, x - 1), epsilon) &&
+                isDiffOk(center, source.get(y - 1, x + 1), epsilon));
+    }
+
     public static boolean isDeprecatedLine(Mat source, int x, int y, double epsilon, double[] background) {
         double[] center = source.get(y, x);
         double[] lower = source.get(y + 1, x);
@@ -168,10 +180,14 @@ public class OpenCVTest {
     }
 
     public static int getCenterCount(Mat source, int x, int y, int size, double epsilon) {
+        return getCenterCount(source, x, y, size, size, size, size, epsilon);
+    }
+
+    public static int getCenterCount(Mat source, int x, int y, int xLeft, int xRight, int yTop, int yBot, double epsilon) {
         double[] center = source.get(y, x);
         int centerCount = 0;
-        for (int x1 = x - size; x1 <= x + size; ++x1) {
-            for (int y1 = y - size; y1 <= y + size; ++y1) {
+        for (int x1 = x - xLeft; x1 <= x + xRight; ++x1) {
+            for (int y1 = y - yTop; y1 <= y + yBot; ++y1) {
                 double[] current = source.get(y1, x1);
                 if (isDiffOk(center, current, epsilon)) centerCount++;
             }
