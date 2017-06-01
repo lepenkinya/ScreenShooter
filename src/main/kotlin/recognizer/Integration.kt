@@ -36,7 +36,7 @@ class Integration {
         }
 
         logMessage(progressIndicator, "Send request...")
-        val request = Request.Post("http://localhost:4567/ocr")
+        val request = Request.Post("http://95.213.236.215:4567/ocr")
                 .addHeader(HttpHeaders.CONTENT_TYPE, "image/png")
                 .bodyByteArray(ioFile.readBytes())
 
