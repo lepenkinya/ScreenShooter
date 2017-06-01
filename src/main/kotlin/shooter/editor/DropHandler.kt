@@ -57,6 +57,6 @@ class DropHandler(val editor: Editor) : FileDropHandler(editor) {
             }
         }
 
-        return image
+        return null
     }
 }
