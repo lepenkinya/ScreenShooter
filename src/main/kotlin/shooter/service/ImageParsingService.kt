@@ -44,9 +44,7 @@ class ImageParsingService(val project: Project) {
     private fun processImageImpl(image: Image, fileType: FileType?) {
 
 
-        var info: ImageInfo = getParsedImageInfo(image, fileType) ?: return
-
-        info = getFormattedInfo(info)
+        val info: ImageInfo = getParsedAndFormattedImageInfo(image, fileType) ?: return
 
         val language = info.fileType.language
 
@@ -89,7 +87,13 @@ class ImageParsingService(val project: Project) {
     }
 
 
-    private fun getParsedImageInfo(image: Image, fileType: FileType?): ImageInfo? {
+    fun getParsedAndFormattedImageInfo(image: Image, fileType: FileType?): ImageInfo? {
+        val info: ImageInfo = getParsedImageInfo(image, fileType) ?: return null
+
+        return getFormattedInfo(info)
+    }
+
+    fun getParsedImageInfo(image: Image, fileType: FileType?): ImageInfo? {
         val indentedTextFragments = getIndentedTextFragments(image) ?: return null
 
         return ReadAction.compute<ImageInfo?, RuntimeException> { detectTypeAndProcessText(indentedTextFragments, fileType) }
