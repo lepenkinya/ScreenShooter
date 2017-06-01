@@ -9,6 +9,7 @@ import spark.Service.ignite
 import java.io.File
 import java.util.concurrent.atomic.AtomicInteger
 
+//0.0.0.0:4567
 fun main(args: Array<String>) {
     val http = ignite()
 
