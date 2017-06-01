@@ -35,12 +35,6 @@ class ImageParsingService(val project: Project) {
 
 
     fun processImage(image: Image, fileType: FileType?, fileToUse: VirtualFile?) {
-
-//        ProgressManager.getInstance().runProcessWithProgressAsynchronously(Task.Backgroundable(project, "Process image") {
-//
-//        }, "Process image",true, project)
-
-
         ApplicationManager.getApplication().invokeLater({
             ProgressManager.getInstance().runProcessWithProgressSynchronously({
                 processImageImpl(image, fileType, fileToUse)

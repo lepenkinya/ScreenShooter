@@ -35,7 +35,7 @@ class DropHandler(val editor: Editor) : FileDropHandler(editor) {
 
                 val text = editor.document.text
 
-                val fileToUse = if (StringUtil.isEmpty(text)) null else virtualFile
+                val fileToUse = if (StringUtil.isEmpty(text)) virtualFile else null
 
                 ImageParsingService.getService(project).processImage(image, fileType, fileToUse)
             }
