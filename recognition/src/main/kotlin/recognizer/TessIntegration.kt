@@ -27,7 +27,8 @@ class TessIntegration {
 //        configFile.createNewFile()
 //
         val user_words = File("./dict")
-        println("File dict exists: ${user_words.exists()}")
+        println("File dict exists: ${user_words.exists()} size: ${user_words.length()}")
+
 
 //        with(configFile) {
 //            appendText("load_system_dawg 0\n")
