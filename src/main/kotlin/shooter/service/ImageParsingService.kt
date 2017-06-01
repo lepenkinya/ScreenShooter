@@ -11,6 +11,7 @@ import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.fileTypes.FileType
 import com.intellij.openapi.fileTypes.LanguageFileType
 import com.intellij.openapi.fileTypes.PlainTextFileType
+import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.*
@@ -34,8 +35,16 @@ class ImageParsingService(val project: Project) {
 
 
     fun processImage(image: Image, fileType: FileType?, fileToUse: VirtualFile?) {
-        ApplicationManager.getApplication().executeOnPooledThread({
-            processImageImpl(image, fileType, fileToUse)
+
+//        ProgressManager.getInstance().runProcessWithProgressAsynchronously(Task.Backgroundable(project, "Process image") {
+//
+//        }, "Process image",true, project)
+
+
+        ApplicationManager.getApplication().invokeLater({
+            ProgressManager.getInstance().runProcessWithProgressSynchronously({
+                processImageImpl(image, fileType, fileToUse)
+            }, "Process image", true, project)
         })
     }
 
@@ -49,7 +58,7 @@ class ImageParsingService(val project: Project) {
         ApplicationManager.getApplication().invokeLater({
             val resultFile = fillFile(info, fileType, fileToUse)
 
-            if (resultFile != null && resultFile == fileToUse) {
+            if (resultFile != null && resultFile != fileToUse) {
                 FileEditorManager.getInstance(project).openFile(resultFile, true)
             }
         })
@@ -100,9 +109,8 @@ class ImageParsingService(val project: Project) {
     }
 
     private fun createScratchFile(fileName: String, ext: String?, language: Language, text: String, option: ScratchFileService.Option): VirtualFile? {
-        val scratchFile = ScratchRootType.getInstance().createScratchFile(project,
+        return ScratchRootType.getInstance().createScratchFile(project,
                 PathUtil.makeFileName(fileName, ext), language, text, option)
-        return scratchFile
     }
 
 
