@@ -22,12 +22,8 @@ class TessIntegration {
         val directory = file.parent
         val resultFileName = directory + System.lineSeparator() + file.nameWithoutExtension
 
-        val tess = File(tessPath)
-        println("Path: " + tess.absolutePath)
-
-
         val result = ProcessExecutor()
-                .command(tess.absolutePath, "-l", "eng", file.absolutePath, resultFileName)
+                .command(tessPath, "-l", "eng", file.absolutePath, resultFileName)
                 .redirectOutput(System.out)
                 .redirectError(System.out)
                 .readOutput(true)
@@ -47,11 +43,8 @@ class TessIntegration {
         val resultFileName = directory + System.lineSeparator() + file.nameWithoutExtension + "_tf.tiff"
 
 
-        val convertUtilPath = File(convertPath)
-        println("Path: " + convertUtilPath.absolutePath)
-
         ProcessExecutor().command(
-                convertUtilPath.absolutePath,
+                convertPath,
                 path,
                 "-resize",
                 convertResize.toString() + "%",

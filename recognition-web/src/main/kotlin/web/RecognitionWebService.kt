@@ -1,6 +1,5 @@
-package recognizer.web
+package web
 
-import com.intellij.execution.configurations.PathEnvironmentVariableUtil
 import recognizer.RecognitionResult
 import recognizer.Status
 import recognizer.recognize
@@ -13,8 +12,8 @@ import java.util.concurrent.atomic.AtomicInteger
 fun main(args: Array<String>) {
     val http = ignite()
 
-    val tessPath = PathEnvironmentVariableUtil.findInPath("tesseract")!!.absolutePath
-    val convertPath = PathEnvironmentVariableUtil.findInPath("convert")!!.absolutePath
+    val tessPath = "tesseract"
+    val convertPath = "convert"
 
     val recognitionService = RecognitionWebService(tessPath, convertPath)
 

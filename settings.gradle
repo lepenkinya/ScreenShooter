@@ -1,3 +1,4 @@
 rootProject.name = 'ScreenShooter'
 
 include "recognition"
+include "recognition-web"
