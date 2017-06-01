@@ -3,6 +3,8 @@ package recognizer
 import com.google.common.net.HttpHeaders
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.diagnostic.Logger
+import com.intellij.openapi.progress.ProgressIndicator
+import com.intellij.openapi.progress.ProgressIndicatorProvider
 import com.intellij.openapi.util.io.FileUtil
 import com.intellij.util.ui.UIUtil
 import org.apache.http.client.fluent.Request
@@ -25,11 +27,15 @@ class Integration {
     val nextNumber = AtomicLong()
 
     fun runForImage(image: Image, tessPath: String, convertPath: String): String {
+        ProgressIndicatorProvider.checkCanceled()
+        val progressIndicator: ProgressIndicator? = ProgressIndicatorProvider.getInstance().progressIndicator
+        logMessage(progressIndicator, "Saving file")
         val ioFile = saveImageAsIOFile(image) ?: return ""
         if (ApplicationManager.getApplication().isUnitTestMode) {
             return recognize(ioFile.absolutePath, tessPath, convertPath).text
         }
 
+        logMessage(progressIndicator, "Send request...")
         val request = Request.Post("http://localhost:4567/ocr")
                 .addHeader(HttpHeaders.CONTENT_TYPE, "image/png")
                 .bodyByteArray(ioFile.readBytes())
@@ -38,6 +44,7 @@ class Integration {
             val response = request.execute().returnResponse()
             val text = EntityUtils.toString(response.entity)
             if (response.statusLine.statusCode in 200..299) {
+                logMessage(progressIndicator, "Process text")
                 return text
             }
             logger.error(text)
@@ -48,6 +55,11 @@ class Integration {
         }
     }
 
+    private fun logMessage(progressIndicator: ProgressIndicator?, message: String) {
+        if (progressIndicator != null) {
+            progressIndicator.text2 = message
+        }
+    }
 
 
     fun saveImageAsIOFile(image: Image): File? {

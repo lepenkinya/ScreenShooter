@@ -51,7 +51,9 @@ class TessIntegration {
         println("Path: " + convertUtilPath.absolutePath)
 
         ProcessExecutor().command(
-                convertUtilPath.absolutePath, "-resize",
+                convertUtilPath.absolutePath,
+                path,
+                "-resize",
                 convertResize.toString() + "%",
                 "-type",
                 "Grayscale",
@@ -61,7 +63,7 @@ class TessIntegration {
                 .execute()
 
 
-        return resultFileName
+        return if (File(resultFileName).exists()) resultFileName else path
     }
 
 }
