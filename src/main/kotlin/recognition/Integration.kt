@@ -1,12 +1,14 @@
 package recognition
 
 import com.google.common.net.HttpHeaders
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.util.io.FileUtil
 import com.intellij.util.ui.UIUtil
 import opencv.OpenCVTest
 import org.apache.http.client.fluent.Request
 import org.apache.http.util.EntityUtils
+import recognition.web.recognize
 import java.awt.Image
 import java.awt.image.BufferedImage
 import java.io.File
@@ -26,6 +28,9 @@ class Integration {
 
     fun runForImage(image: Image): String {
         val ioFile = saveImageAsIOFile(image) ?: return ""
+        if (ApplicationManager.getApplication().isUnitTestMode) {
+            return recognize(ioFile.absolutePath).text
+        }
 
         val request = Request.Post("http://localhost:4567/ocr")
                 .addHeader(HttpHeaders.CONTENT_TYPE, "image/png")
