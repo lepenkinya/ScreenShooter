@@ -23,6 +23,7 @@ import recognizer.Integration
 import shooter.preview.CropSelectionDialog
 import java.awt.Image
 import java.awt.Rectangle
+import java.io.File
 
 
 class ImageParsingService(val project: Project) {
@@ -125,8 +126,8 @@ class ImageParsingService(val project: Project) {
     }
 
 
-    private fun getIndentedTextFragments(image: ImageWithCrop): Array<String>? {
-        val resultText = Integration.instance.runForImage(image)
+    private fun getIndentedTextFragments(image: ImageWithCrop, debugDir: File?): Array<String>? {
+        val resultText = Integration.instance.runForImage(image, debugDir)
         return arrayOf(resultText)
     }
 
@@ -137,8 +138,8 @@ class ImageParsingService(val project: Project) {
         return getFormattedInfo(info)
     }
 
-    fun getParsedImageInfo(image: ImageWithCrop, fileType: FileType?): ImageInfo? {
-        val indentedTextFragments = getIndentedTextFragments(image) ?: return null
+    fun getParsedImageInfo(image: ImageWithCrop, fileType: FileType?, debugDir: File? = null): ImageInfo? {
+        val indentedTextFragments = getIndentedTextFragments(image, debugDir) ?: return null
 
         return ReadAction.compute<ImageInfo?, RuntimeException> { detectTypeAndProcessText(indentedTextFragments, fileType) }
     }

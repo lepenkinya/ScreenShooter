@@ -26,14 +26,14 @@ class Integration {
 
     val nextNumber = AtomicLong()
 
-    fun runForImage(image: ImageParsingService.ImageWithCrop): String {
+    fun runForImage(image: ImageParsingService.ImageWithCrop, debugDir: File?): String {
         ProgressIndicatorProvider.checkCanceled()
         val progressIndicator: ProgressIndicator? = ProgressIndicatorProvider.getInstance().progressIndicator
         logMessage(progressIndicator, "Saving file")
         val ioFile = saveImageAsIOFile(image) ?: return ""
         if (ApplicationManager.getApplication().isUnitTestMode) {
             val tessPath = PathEnvironmentVariableUtil.findInPath("tesseract")!!.absolutePath
-            return recognize(ioFile.absolutePath, tessPath).text
+            return recognize(ioFile.absolutePath, tessPath, debugDir).text
         }
 
         logMessage(progressIndicator, "Send request...")

@@ -1,5 +1,6 @@
 package recognizer
 
+import org.apache.commons.io.FileUtils
 import org.zeroturnaround.exec.ProcessExecutor
 import java.io.File
 
@@ -11,15 +12,15 @@ class TessIntegration {
     }
 
 
-    fun recognize(path: String, testPass: String): String {
-        val newPath = convertIfRequired(path)
+    fun recognize(path: String, testPass: String, debugDir: File?): String {
+        val newPath = convertIfRequired(path,debugDir)
         return runCommandLine(newPath, testPass)
     }
 
     private fun runCommandLine(path: String, tessPath: String): String {
         val file = File(path)
         val directory = file.parent
-        val resultFileName = directory + System.lineSeparator() + file.nameWithoutExtension
+        val resultFileName = directory + File.separator + file.nameWithoutExtension
 
 //        val configFile = File("./tessconfig")
 //        if (configFile.exists()) configFile.delete()
@@ -57,10 +58,10 @@ class TessIntegration {
         return File(resultFileName + ".txt").readText()
     }
 
-    fun convertIfRequired(path: String): String {
+    fun convertIfRequired(path: String, debugDir: File?): String {
         val file = File(path)
         val directory = file.parent
-        val resultFileName = directory + System.lineSeparator() + file.nameWithoutExtension + "_tf.tiff"
+        val resultFileName = directory + File.separator + file.nameWithoutExtension + "_tf.tiff"
 
         //-density 300
         ProcessExecutor().command(
@@ -74,6 +75,10 @@ class TessIntegration {
         ).redirectError(System.out)
                 .redirectOutput(System.out)
                 .execute()
+
+        if (debugDir != null) {
+            FileUtils.copyFile(File(resultFileName), File(debugDir, "after_convert.tiff"))
+        }
 
         return if (File(resultFileName).exists()) resultFileName else path
     }

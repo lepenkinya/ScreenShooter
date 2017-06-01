@@ -1,6 +1,7 @@
 package opencv;
 
 import nu.pattern.OpenCV;
+import org.jetbrains.annotations.Nullable;
 import org.opencv.core.*;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;

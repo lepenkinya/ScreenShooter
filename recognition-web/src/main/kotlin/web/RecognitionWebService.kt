@@ -55,7 +55,7 @@ class RecognitionWebService(val tessPath: String) {
         File(filename).writeBytes(body)
 
         try {
-            return recognize(filename, tessPath)
+            return recognize(filename, tessPath, null)
         } catch (e: Exception) {
             return RecognitionResult(Status.FAILED, e.toString())
         } finally {

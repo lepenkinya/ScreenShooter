@@ -16,7 +16,7 @@ class TessTest {
         val convertPath = PathEnvironmentVariableUtil.findInPath("convert")!!.absolutePath
 
         val tessIntegration = TessIntegration()
-        val result = tessIntegration.recognize(file.absolutePath, tessPath)
+        val result = tessIntegration.recognize(file.absolutePath, tessPath, null)
 
         Assume.assumeNotNull(result)
         println(result)
