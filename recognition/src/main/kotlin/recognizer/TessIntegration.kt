@@ -62,6 +62,8 @@ class TessIntegration {
                 path,
                 "-resize",
                 "300%",
+                "-density",
+                "300",
                 "+dither",
                 "-colors",
                 "2",
@@ -73,6 +75,8 @@ class TessIntegration {
         val whiteParams = arrayOf(
                 "convert",
                 path,
+                "-density",
+                "300",
                 "-resize",
                 "300%",
                 "-threshold",
