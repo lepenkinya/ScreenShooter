@@ -145,7 +145,7 @@ public class OpenCVTest {
     }
 
     public static boolean isSizeTwoTemplate(Mat source, int x, int y, double epsilon) {
-        double[] center = source.get(x, y);
+        double[] center = source.get(y, x);
         if (x < 2 || y < 2 || x >= source.width() - 2 || y >= source.height() - 2) return false;
         return getCenterCount(source, x, y, 1, 2, 1, 1, epsilon) <= 4 &&
                 (isDiffOk(center, source.get(y + 1, x - 1), epsilon) &&
