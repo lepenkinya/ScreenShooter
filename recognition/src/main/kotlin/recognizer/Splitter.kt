@@ -120,7 +120,7 @@ class ThreeLineRegion(val image: Mat, val bgColor: OpenCVUtils.PixelColor) {
             end = line.indexOf("0", start)
             if (end < 0) return list
 
-            if (end - start > 10) {
+            if (end - start > 30) {
                 list.add(XSegment(start, end - 1))
             }
         }

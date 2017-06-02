@@ -4,7 +4,6 @@ import com.intellij.ide.highlighter.JavaFileType
 import com.intellij.openapi.application.PathManager
 import com.intellij.openapi.fileTypes.FileType
 import com.intellij.openapi.fileTypes.PlainTextFileType
-import com.intellij.openapi.util.io.FileSystemUtil
 import com.intellij.openapi.util.io.FileUtil
 import com.intellij.openapi.util.text.StringUtil
 import com.intellij.testFramework.fixtures.LightPlatformCodeInsightFixtureTestCase
@@ -13,7 +12,6 @@ import junit.framework.TestCase
 import java.awt.image.BufferedImage
 import java.io.File
 import java.io.IOException
-import java.nio.file.Files
 import java.nio.file.Paths
 import javax.imageio.ImageIO
 
