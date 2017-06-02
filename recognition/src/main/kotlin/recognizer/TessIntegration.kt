@@ -58,15 +58,22 @@ class TessIntegration {
         val resultFileName = fileNameWithoutExt + "_tf.tiff"
 
 
+        val newName = fileNameWithoutExt + "_n" + file.extension
         if (isDark) {
-            val newName = fileNameWithoutExt + "_n" + file.extension
-            ProcessExecutor().command("convert", fileName, "-negate", newName).redirectError(System.out)
+
+            ProcessExecutor().command("convert", fileName, "-negate", "-normalize", newName).redirectError(System.out)
                     .redirectOutput(System.out)
                     .execute()
 
-            FileUtils.copyFile(File(newName), File(debugDir, "${file.nameWithoutExtension}_after_normalize." + file.extension))
-            fileName = newName
+
+        } else {
+            ProcessExecutor().command("convert", fileName, "-normalize", newName).redirectError(System.out)
+                    .redirectOutput(System.out)
+                    .execute()
         }
+
+        FileUtils.copyFile(File(newName), File(debugDir, "${file.nameWithoutExtension}_after_normalize." + file.extension))
+        fileName = newName
 
         val whiteParams = arrayOf(
                 "convert",
@@ -76,7 +83,7 @@ class TessIntegration {
                 "-resize",
                 "300%",
                 "-threshold",
-                "79%",
+                "75%",
                 resultFileName)
 
 
