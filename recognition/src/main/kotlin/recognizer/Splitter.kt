@@ -15,7 +15,7 @@ object ImagePreprocessor {
 
     fun imageLineFiles(fileName: String): Pair<Boolean, List<String>> {
         val (mat, isDark) = OpenCVUtils.preprocess(fileName)
-        val lines = listOf(mat)
+        val lines = lines(mat)
 
         val parentPath = File(fileName).parent
 
@@ -35,14 +35,14 @@ object ImagePreprocessor {
 object Splitter {
 
 
-    fun lines(image: Mat) {
+    fun lines(image: Mat): List<Mat> {
         val bgColor = OpenCVUtils.backgroundColor(image)
 
         val rows = (0..image.rows() - 1)
                 .map { image.row(it)!! }
                 .map { it.lineInfo(bgColor) }
 
-        if (rows.isEmpty()) return
+        if (rows.isEmpty()) return emptyList()
 
 
         val rects = mutableListOf<Rectangle>()
@@ -80,11 +80,13 @@ object Splitter {
         rects.forEach {
             val p1 = Point(it.x_left.toDouble(), it.y_top.toDouble())
             val p2 = Point(it.x_right.toDouble(), it.y_bottom.toDouble())
-            Imgproc.rectangle(image, p1, p2, blue, -1)
+            Imgproc.rectangle(image, p1, p2, bgColorScalar, -1)
         }
 
 
         Imgcodecs.imwrite("idi_davai.png", image)
+
+        return listOf(image)
     }
 
 }

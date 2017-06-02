@@ -55,21 +55,21 @@ public class OpenCVUtils {
         int filterOffset = 1;
         long replaceCount = 0;
         double[] background = maxColor.toPoint();
-        for (int x = filterOffset; x < source.width() - filterOffset; ++x) {
-            for (int y = filterOffset; y < source.height() - filterOffset; ++y) {
-                double[] center = source.get(y, x);
-                if (isSizeOneTemplate(source, x, y, epsilon) || isSizeTwoTemplate(source, x, y, epsilon)) {//centerCount <= 5) {
-                    //replace current pixel
-                    replaceCount++;
-                    destination.put(y, x, background);
-//                } else if (isDeprecatedLine(source, x, y, epsilon, background)) {
-//                    double[] upper = source.get(y - 1, x);
-//                    destination.put(y, x, upper);
-                } else {
-                    destination.put(y, x, center);
-                }
-            }
-        }
+//        for (int x = filterOffset; x < source.width() - filterOffset; ++x) {
+//            for (int y = filterOffset; y < source.height() - filterOffset; ++y) {
+//                double[] center = source.get(y, x);
+//                if (isSizeOneTemplate(source, x, y, epsilon) || isSizeTwoTemplate(source, x, y, epsilon)) {//centerCount <= 5) {
+//                    //replace current pixel
+//                    replaceCount++;
+//                    destination.put(y, x, background);
+////                } else if (isDeprecatedLine(source, x, y, epsilon, background)) {
+////                    double[] upper = source.get(y - 1, x);
+////                    destination.put(y, x, upper);
+//                } else {
+//                    destination.put(y, x, center);
+//                }
+//            }
+//        }
 //        Imgproc.cvtColor(destination, destination, Imgproc.COLOR_RGB2GRAY);
         return destination;
     }
