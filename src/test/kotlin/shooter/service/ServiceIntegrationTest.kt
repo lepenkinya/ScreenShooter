@@ -115,4 +115,8 @@ class ServiceIntegrationTest : LightPlatformCodeInsightFixtureTestCase() {
         doTestForFile(PlainTextFileType.INSTANCE)
     }
 
+    fun testCreateMethodQ() {
+        doTestForFile(PlainTextFileType.INSTANCE)
+    }
+
 }
