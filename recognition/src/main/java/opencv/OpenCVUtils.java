@@ -94,7 +94,7 @@ public class OpenCVUtils {
         final double red;
         final double blue;
         final double green;
-        PixelColor(double[] input) {
+        public PixelColor(double[] input) {
             this(input[0], input[1], input[2]);
         }
         PixelColor(double red, double blue, double green) {

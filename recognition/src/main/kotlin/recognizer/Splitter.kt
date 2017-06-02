@@ -7,6 +7,7 @@ import org.opencv.core.Range
 import org.opencv.core.Scalar
 import org.opencv.imgcodecs.Imgcodecs
 import org.opencv.imgproc.Imgproc
+import recognizer.Splitter.lines
 import java.io.File
 
 
@@ -34,70 +35,103 @@ object ImagePreprocessor {
 object Splitter {
 
 
-    fun lines(image: Mat): List<Mat> {
+    fun lines(image: Mat) {
         val bgColor = OpenCVUtils.backgroundColor(image)
 
         val rows = (0..image.rows() - 1)
                 .map { image.row(it)!! }
                 .map { it.lineInfo(bgColor) }
 
-        if (rows.isEmpty()) return emptyList()
+        if (rows.isEmpty()) return
 
 
-        var currentStripeEmpty = true
+        val rects = mutableListOf<Rectangle>()
 
-        var emptyLinesStartRow = 0
-        var segmentStart = 0
+        for (currentRow in 3..rows.size - 4) {
+            val region = ThreeLineRegion(image.rowRange(Range(currentRow - 3, currentRow)), bgColor)
+            val filledRegions = region.filledRegions()
+            if (filledRegions.isNotEmpty()) {
+                val under = image.row(currentRow + 1)
 
-        val segments = mutableListOf<Segment>()
-
-
-        for (currentRow in 1..rows.size - 1) {
-            val current = rows[currentRow]
-            val delta = Math.abs(rows[currentRow - 1].foregroundPixels - current.foregroundPixels)
-
-            if (currentStripeEmpty && delta > 3) {
-                currentStripeEmpty = false
-
-                val emptyRegionLength = currentRow - emptyLinesStartRow
-                val emptyRegionCenterRow = emptyLinesStartRow + emptyRegionLength / 2
-
-                if (emptyRegionCenterRow > segmentStart) {
-                    segments.add(Segment(segmentStart, emptyRegionCenterRow))
+                val colorMap = mutableMapOf<OpenCVUtils.PixelColor, Int>()
+                for (i in 0..under.cols() - 1) {
+                    val color = OpenCVUtils.PixelColor(under.get(0, i))
+                    val value = colorMap[color]
+                    if (value == null) {
+                        colorMap[color] = 1
+                    } else {
+                        colorMap[color] = value + 1
+                    }
                 }
 
-                segmentStart = emptyRegionCenterRow
-            }
-            else if (!currentStripeEmpty && current.foregroundPixels < 4) {
-                currentStripeEmpty = true
-                emptyLinesStartRow = currentRow
+                val sorted = colorMap.values.sortedDescending()
+                if (sorted.size == 1 || sorted[0] > 100 * sorted[1]) {
+                    filledRegions.forEach {
+                        rects.add(Rectangle(it.x_left, currentRow - 2, it.x_right, currentRow))
+                    }
+                }
             }
         }
 
-        if (segmentStart < rows.size - 1) {
-            segments.add(Segment(segmentStart, rows.size - 1))
-        }
 
-        val imageWidth = image.width() - 1
         val blue = Scalar(255.0, 0.0, 0.0)
-        segments.forEach {
-            val left_top = Point(0.0, it.y_top.toDouble())
-            val right_bottom = Point(imageWidth.toDouble(), it.y_bottom.toDouble())
-            Imgproc.rectangle(image, left_top, right_bottom, blue)
+        val bgColorScalar = Scalar(bgColor.toPoint())
+
+        rects.forEach {
+            val p1 = Point(it.x_left.toDouble(), it.y_top.toDouble())
+            val p2 = Point(it.x_right.toDouble(), it.y_bottom.toDouble())
+            Imgproc.rectangle(image, p1, p2, blue, -1)
         }
 
 
         Imgcodecs.imwrite("idi_davai.png", image)
+    }
 
-        return segments.map {
-            Mat(image, Range(it.y_top, it.y_bottom))
+}
+
+class ThreeLineRegion(val image: Mat, val bgColor: OpenCVUtils.PixelColor) {
+
+    private fun columnEmpty(index: Int): Boolean {
+        val column = image.col(index)
+        val maxRows = image.rows()
+        val result = (0..maxRows - 1)
+                .map { OpenCVUtils.isDiffOk(bgColor.toPoint(), column.get(it, 0), OpenCVUtils.epsilon) }
+                .all { it }
+        return result
+    }
+
+    private fun line(): String {
+        val maxCols = image.cols()
+        return (0..maxCols - 1).map { columnEmpty(it) }.joinToString("", transform = { if (it) "0" else "1" })
+    }
+
+    fun filledRegions(): List<XSegment> {
+        val line = line()
+        val list = mutableListOf<XSegment>()
+        var start = 0
+        var end = 0
+
+        while (true) {
+            start = line.indexOf("1", end)
+            if (start < 0) return list
+
+            end = line.indexOf("0", start)
+            if (end < 0) return list
+
+            if (end - start > 10) {
+                list.add(XSegment(start, end - 1))
+            }
         }
     }
 
 }
 
 
-class Segment(val y_top: Int, val y_bottom: Int)
+class Rectangle(val x_left: Int, val y_top: Int, val x_right: Int, val y_bottom: Int)
+
+class XSegment(val x_left: Int, val x_right: Int)
+
+class YSegment(val y_top: Int, val y_bottom: Int)
 
 private fun Mat.lineInfo(bgColor: OpenCVUtils.PixelColor): LineInfo {
     val row = this
@@ -116,8 +150,9 @@ class LineInfo(val totalPixels: Int, val foregroundPixels: Int)
 
 
 fun main(args: Array<String>) {
-//    OpenCVUtils()
-//    val file = File("54image.png")
-//    val path = file.absolutePath
-//    lines(path)
+    OpenCVUtils()
+    val file = File("0_after_preprocess.png")
+    val path = file.absolutePath
+    val mat = Imgcodecs.imread(path)
+    lines(mat)
 }
