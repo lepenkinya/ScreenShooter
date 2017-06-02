@@ -47,11 +47,11 @@ object Splitter {
 
         val rects = mutableListOf<Rectangle>()
 
-        for (currentRow in 3..rows.size - 4) {
+        for (currentRow in 3..rows.size - 5) {
             val region = ThreeLineRegion(image.rowRange(Range(currentRow - 3, currentRow)), bgColor)
             val filledRegions = region.filledRegions()
             if (filledRegions.isNotEmpty()) {
-                val under = image.row(currentRow + 1)
+                val under = image.row(currentRow + 2)
 
                 val colorMap = mutableMapOf<OpenCVUtils.PixelColor, Int>()
                 for (i in 0..under.cols() - 1) {
@@ -65,7 +65,7 @@ object Splitter {
                 }
 
                 val sorted = colorMap.values.sortedDescending()
-                if (sorted.size == 1 || sorted[0] > 100 * sorted[1]) {
+                if (sorted.size == 1 || sorted[0] > 50 * sorted[1]) {
                     filledRegions.forEach {
                         rects.add(Rectangle(it.x_left, currentRow - 2, it.x_right, currentRow))
                     }
