@@ -76,7 +76,7 @@ class TessIntegration {
                 "-resize",
                 "300%",
                 "-threshold",
-                "77%",
+                "79%",
                 resultFileName)
 
 
