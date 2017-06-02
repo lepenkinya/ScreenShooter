@@ -51,7 +51,7 @@ object Splitter {
             val region = ThreeLineRegion(image.rowRange(Range(currentRow - 3, currentRow)), bgColor)
             val filledRegions = region.filledRegions()
             if (filledRegions.isNotEmpty()) {
-                val under = image.row(currentRow + 2)
+                val under = image.row(currentRow + 1)
 
                 val colorMap = mutableMapOf<OpenCVUtils.PixelColor, Int>()
                 for (i in 0..under.cols() - 1) {

@@ -106,13 +106,13 @@ object CognitiveApi {
 
                 val mat = OpenCVUtils.filterTextRectangles(inputName, allWords, region.allWords(), 20, OpenCVUtils.epsilon, 0.5);
 
-                region.regions.forEach {
-                    println("REGION_START")
-                    it.lines.forEach {
-                        println(it.words.joinToString(" ", transform = { it.text }))
-                    }
-                    println("REGION_END")
-                }
+//                region.regions.forEach {
+//                    println("REGION_START")
+//                    it.lines.forEach {
+//                        println(it.words.joinToString(" ", transform = { it.text }))
+//                    }
+//                    println("REGION_END")
+//                }
 
                 return mat
             }
