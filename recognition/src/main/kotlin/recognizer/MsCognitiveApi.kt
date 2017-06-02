@@ -1,12 +1,13 @@
 package recognizer
 
 import com.google.gson.Gson
-import opencv.OpenCVTest
+import opencv.OpenCVUtils
 import org.apache.http.client.methods.HttpPost
 import org.apache.http.client.utils.URIBuilder
 import org.apache.http.entity.FileEntity
 import org.apache.http.impl.client.DefaultHttpClient
 import org.apache.http.util.EntityUtils
+import org.opencv.core.Mat
 import java.io.File
 
 val gson = Gson()
@@ -71,7 +72,7 @@ object CognitiveApi {
     }
 
 
-    fun check(inputName: String) {
+    fun smartPreProcess(inputName: String): Mat? {
         val httpClient = DefaultHttpClient()
 
         try {
@@ -103,7 +104,7 @@ object CognitiveApi {
                 val allWords = region.wordsCoords()
                 val allLines = region.allLinesCoords()
 
-                OpenCVTest.filterTextRectangles(inputName, allWords, region.allWords(), 20, OpenCVTest.epsilon, 0.5);
+                val mat = OpenCVUtils.filterTextRectangles(inputName, allWords, region.allWords(), 20, OpenCVUtils.epsilon, 0.5);
 
                 region.regions.forEach {
                     println("REGION_START")
@@ -112,19 +113,20 @@ object CognitiveApi {
                     }
                     println("REGION_END")
                 }
-            }
 
+                return mat
+            }
         } catch (e: Exception) {
             println(e.message)
-            OpenCVTest.onFailedPreprocessing(inputName)
         }
 
+        return OpenCVUtils.onFailedPreprocessing(inputName)
     }
 
 }
 
 
 fun main(args: Array<String>) {
-    CognitiveApi.check("xxx.png")
+    CognitiveApi.smartPreProcess("xxx.png")
     println()
 }

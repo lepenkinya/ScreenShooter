@@ -1,6 +1,6 @@
 package web
 
-import opencv.OpenCVTest
+import opencv.OpenCVUtils
 import recognizer.RecognitionResult
 import recognizer.Status
 import recognizer.recognize
@@ -12,7 +12,7 @@ import java.util.concurrent.atomic.AtomicInteger
 
 //0.0.0.0:4567
 fun main(args: Array<String>) {
-    OpenCVTest()
+    OpenCVUtils()
 
     val http = ignite()
 

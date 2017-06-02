@@ -1,6 +1,5 @@
 package recognizer
 
-import opencv.PreprocessResult
 import org.apache.commons.io.FileUtils
 import org.zeroturnaround.exec.ProcessExecutor
 import java.io.File
@@ -13,8 +12,8 @@ class TessIntegration {
     }
 
 
-    fun recognize(info: PreprocessResult, testPass: String, debugDir: File?): String {
-        val newPath = convertIfRequired(info, debugDir)
+    fun recognize(isDark: Boolean, fileName: String, testPass: String, debugDir: File?): String {
+        val newPath = convertIfRequired(isDark, fileName, debugDir)
         return runCommandLine(newPath, testPass)
     }
 
@@ -51,15 +50,14 @@ class TessIntegration {
         return File(resultFileName + ".txt").readText()
     }
 
-    fun convertIfRequired(preprocessResult: PreprocessResult, debugDir: File?): String {
-        val path = preprocessResult.fileName
-        val file = File(path)
+    fun convertIfRequired(isDark: Boolean, fileName: String, debugDir: File?): String {
+        val file = File(fileName)
         val directory = file.parent
         val resultFileName = directory + File.separator + file.nameWithoutExtension + "_tf.tiff"
 
         val darkParams = arrayOf(
                 "convert",
-                path,
+                fileName,
                 "-resize",
                 "300%",
                 "-density",
@@ -74,7 +72,7 @@ class TessIntegration {
 
         val whiteParams = arrayOf(
                 "convert",
-                path,
+                fileName,
                 "-density",
                 "300",
                 "-resize",
@@ -85,15 +83,15 @@ class TessIntegration {
 
 
         //-density 300
-        ProcessExecutor().command(if (preprocessResult.isDark) darkParams.toList() else whiteParams.toList()).redirectError(System.out)
+        ProcessExecutor().command(if (isDark) darkParams.toList() else whiteParams.toList()).redirectError(System.out)
                 .redirectOutput(System.out)
                 .execute()
 
         if (debugDir != null) {
-            FileUtils.copyFile(File(resultFileName), File(debugDir, "after_convert.tiff"))
+            FileUtils.copyFile(File(resultFileName), File(debugDir, "${file.nameWithoutExtension}_after_convert.tiff"))
         }
 
-        return if (File(resultFileName).exists()) resultFileName else path
+        return if (File(resultFileName).exists()) resultFileName else fileName
     }
 
 

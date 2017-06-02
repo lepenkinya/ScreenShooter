@@ -13,7 +13,7 @@ import recognizer.Word;
 import java.io.*;
 import java.util.*;
 
-public class OpenCVTest {
+public class OpenCVUtils {
 
     /*THIS IS INTENDED TO BE API*/
     public static final double epsilon = 10.0;
@@ -79,8 +79,8 @@ public class OpenCVTest {
         File imageFile = new File(imageName);
         String irName = (imageFile.getParent() == null ? "" : imageFile.getParent() + "/") + "IR" + imageFile.getName();
         Imgcodecs.imwrite(irName, intermediate);
-        CognitiveApi.INSTANCE.check(irName);
-        return new PreprocessResult(getPreprocessedName(irName), backgroundColor(intermediate).isDark());
+        Mat mat = CognitiveApi.INSTANCE.smartPreProcess(irName);
+        return new PreprocessResult(mat, backgroundColor(intermediate).isDark());
     }
 
     public static String getPreprocessedName(String basePath) {
@@ -274,7 +274,7 @@ public class OpenCVTest {
 
     public static Random myRandom = new Random(System.currentTimeMillis());
 
-    public static void filterTextRectangles(String input, List<Coordinates> wordCoords, List<Word> words, int samplePointsCount, double epsilon, double threshold) {
+    public static Mat filterTextRectangles(String input, List<Coordinates> wordCoords, List<Word> words, int samplePointsCount, double epsilon, double threshold) {
         Mat source = Imgcodecs.imread(input,  Imgcodecs.CV_LOAD_IMAGE_COLOR);
         filterTextRectangles(source, wordCoords, samplePointsCount, epsilon, threshold);
 //        double wordHeight = 0;
@@ -287,7 +287,7 @@ public class OpenCVTest {
 //            double scaleFactor = 30 / wordHeight;
 //            Imgproc.resize(source, source, new Size(source.width() * scaleFactor, source.height() * scaleFactor));
 //        }
-        Imgcodecs.imwrite(getPreprocessedName(input), source);
+        return source;
     }
 
     public static void addRectangles(String input, List<Coordinates> words, List<Coordinates> lines) {
@@ -301,9 +301,8 @@ public class OpenCVTest {
         Imgcodecs.imwrite("rectangles_"+input, dst);
     }
 
-    public static void onFailedPreprocessing(String input) {
-        Mat source = Imgcodecs.imread(input, Imgcodecs.CV_LOAD_IMAGE_GRAYSCALE);
-        Imgcodecs.imwrite(getPreprocessedName(input), source);
+    public static Mat onFailedPreprocessing(String input) {
+        return Imgcodecs.imread(input, Imgcodecs.CV_LOAD_IMAGE_GRAYSCALE);
     }
 
     public static double segmentLength(Point a, Point b) {

@@ -1,3 +1,5 @@
 package opencv
 
-data class PreprocessResult(val fileName: String, val isDark: Boolean)
+import org.opencv.core.Mat
+
+data class PreprocessResult(val mat: Mat, val isDark: Boolean)
