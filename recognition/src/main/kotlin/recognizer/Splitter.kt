@@ -51,20 +51,9 @@ object Splitter {
             val region = ThreeLineRegion(image.rowRange(Range(currentRow - 3, currentRow)), bgColor)
             val filledRegions = region.filledRegions()
             if (filledRegions.isNotEmpty()) {
-                val under = image.row(currentRow + 1)
+                val map = colorsOnRow(image, currentRow + 2)
+                val sorted = map.values.sortedDescending()
 
-                val colorMap = mutableMapOf<OpenCVUtils.PixelColor, Int>()
-                for (i in 0..under.cols() - 1) {
-                    val color = OpenCVUtils.PixelColor(under.get(0, i))
-                    val value = colorMap[color]
-                    if (value == null) {
-                        colorMap[color] = 1
-                    } else {
-                        colorMap[color] = value + 1
-                    }
-                }
-
-                val sorted = colorMap.values.sortedDescending()
                 if (sorted.size == 1 || sorted[0] > 50 * sorted[1]) {
                     filledRegions.forEach {
                         rects.add(Rectangle(it.x_left, currentRow - 2, it.x_right, currentRow))
@@ -87,6 +76,21 @@ object Splitter {
         Imgcodecs.imwrite("idi_davai.png", image)
 
         return listOf(image)
+    }
+
+    private fun colorsOnRow(image: Mat, row: Int): Map<OpenCVUtils.PixelColor, Int> {
+        val under = image.row(row)
+        val colorMap = mutableMapOf<OpenCVUtils.PixelColor, Int>()
+        for (i in 0..under.cols() - 1) {
+            val color = OpenCVUtils.PixelColor(under.get(0, i))
+            val value = colorMap[color]
+            if (value == null) {
+                colorMap[color] = 1
+            } else {
+                colorMap[color] = value + 1
+            }
+        }
+        return colorMap
     }
 
 }
