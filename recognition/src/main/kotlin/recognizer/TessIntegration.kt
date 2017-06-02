@@ -36,7 +36,7 @@ class TessIntegration {
         val result = ProcessExecutor()
                 .command(
                         tessPath,
-                        "-l", "eng",
+                        "-l", "eng+Menlo+Monaco",
                         "--user-words", user_words.absolutePath,
                         file.absolutePath, resultFileName//, configFile.absolutePath
                 )
@@ -50,25 +50,23 @@ class TessIntegration {
         return File(resultFileName + ".txt").readText()
     }
 
-    fun convertIfRequired(isDark: Boolean, fileName: String, debugDir: File?): String {
+    fun convertIfRequired(isDark: Boolean, fileNameI: String, debugDir: File?): String {
+        var fileName = fileNameI
         val file = File(fileName)
         val directory = file.parent
-        val resultFileName = directory + File.separator + file.nameWithoutExtension + "_tf.tiff"
+        val fileNameWithoutExt = directory + File.separator + file.nameWithoutExtension
+        val resultFileName = fileNameWithoutExt + "_tf.tiff"
 
-        val darkParams = arrayOf(
-                "convert",
-                fileName,
-                "-resize",
-                "300%",
-                "-density",
-                "300",
-                "+dither",
-                "-colors",
-                "2",
-                "-normalize",
-                "-colorspace",
-                "gray",
-                resultFileName)
+
+        if (isDark) {
+            val newName = fileNameWithoutExt + "_n" + file.extension
+            ProcessExecutor().command("convert", fileName, "-negate", newName).redirectError(System.out)
+                    .redirectOutput(System.out)
+                    .execute()
+
+            FileUtils.copyFile(File(newName), File(debugDir, "${file.nameWithoutExtension}_after_normalize." + file.extension))
+            fileName = newName
+        }
 
         val whiteParams = arrayOf(
                 "convert",
@@ -78,12 +76,12 @@ class TessIntegration {
                 "-resize",
                 "300%",
                 "-threshold",
-                "80%",
+                "77%",
                 resultFileName)
 
 
         //-density 300
-        ProcessExecutor().command(if (isDark) darkParams.toList() else whiteParams.toList()).redirectError(System.out)
+        ProcessExecutor().command(whiteParams.toList()).redirectError(System.out)
                 .redirectOutput(System.out)
                 .execute()
 
