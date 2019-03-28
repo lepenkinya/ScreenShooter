@@ -2,6 +2,8 @@
 <project version="4">
   <component name="CompilerConfiguration">
     <bytecodeTargetLevel>
+      <module name="playground_main" target="1.8" />
+      <module name="playground_test" target="1.8" />
       <module name="recognition-web_main" target="1.8" />
       <module name="recognition-web_test" target="1.8" />
       <module name="recognition_main" target="1.8" />

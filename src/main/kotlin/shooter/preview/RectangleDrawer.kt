@@ -1,6 +1,5 @@
 package shooter.preview
 
-import sun.plugin.util.UIUtil
 import java.awt.*
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
